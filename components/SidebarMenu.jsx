@@ -5,10 +5,12 @@ import Link from "next/link";
 
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
+import { useAppContext } from "@/app/AppProvider";
 
 const SidebarMenu = () => {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const { selectedTab, changeTab } = useAppContext();
 
   useEffect(() => {
     setMounted(true);
@@ -44,7 +46,10 @@ const SidebarMenu = () => {
             <li class="flex-grow lg:flex-grow-0">
               <a
                 id="default-tab"
-                href="#first"
+                onClick={() => {
+          
+                  changeTab("profile");
+                }}
                 class="tab-button flex relative items-center justify-center mx-auto h-14 w-14 leading-[14px] group/tab my-2 rounded-lg"
               >
                 <div class="absolute items-center hidden -top-10 ltr:left-0 group-hover/tab:flex rtl:right-0">
@@ -58,7 +63,7 @@ const SidebarMenu = () => {
             </li>
             <li class="flex-grow lg:flex-grow-0">
               <a
-                href="#second"
+                onClick={() => changeTab("chats")}
                 class="tab-button active relative flex items-center justify-center mx-auto h-14 w-14 leading-[14px] group/tab my-2 rounded-lg"
               >
                 <div class="absolute items-center hidden -top-10 ltr:left-0 group-hover/tab:flex rtl:right-0">
@@ -72,7 +77,7 @@ const SidebarMenu = () => {
             </li>
             <li class="flex-grow lg:flex-grow-0">
               <a
-                href="#third"
+                onClick={() => changeTab("groups")}
                 class="tab-button relative flex items-center justify-center mx-auto h-14 w-14 leading-[14px] group/tab my-2 rounded-lg"
               >
                 <div class="absolute items-center hidden -top-10 ltr:left-0 group-hover/tab:flex rtl:right-0">
@@ -86,7 +91,7 @@ const SidebarMenu = () => {
             </li>
             <li class="flex-grow lg:flex-grow-0">
               <a
-                href="#fourth"
+                onClick={() => changeTab("contacts")}
                 class="tab-button relative flex items-center justify-center mx-auto h-14 w-14 leading-[14px] group/tab my-2 rounded-lg"
               >
                 <div class="absolute items-center hidden -top-10 ltr:left-0 group-hover/tab:flex rtl:right-0">
@@ -100,7 +105,7 @@ const SidebarMenu = () => {
             </li>
             <li class="flex-grow lg:flex-grow-0">
               <a
-                href="#fifth"
+                onClick={() => changeTab("settings")}
                 class="tab-button relative flex items-center justify-center mx-auto h-14 w-14 leading-[14px] group/tab my-2 rounded-lg"
               >
                 <div class="absolute items-center hidden -top-10 ltr:left-0 group-hover/tab:flex rtl:right-0">

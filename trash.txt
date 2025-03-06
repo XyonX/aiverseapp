@@ -1,3 +1,54 @@
+// pages/chat/[id].jsx
+"use client";
+import React, { useState, useEffect } from "react";
+import Image from "next/image";
+import { useAppContext } from "@/app/AppProvider";
+import { useRouter } from "next/navigation";
+
+const UserChat = ({ params }) => {
+  const {
+    aiContacts,
+    selectedAIContact,
+    setSelectedAIContact,
+    recentChatContacts,
+  } = useAppContext();
+  const router = useRouter();
+  const [audioModalOpen, setAudioModalOpen] = useState(false);
+  const [videoModalOpen, setVideoModalOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(null);
+
+  const toggleDropdown = (id) => {
+    setDropdownOpen(dropdownOpen === id ? null : id);
+  };
+
+  // Sample conversation data for demo (replace with real data if available)
+  const conversation = {
+    1: [
+      { sender: "Grok", message: "How can I assist you today?", time: "10:00" },
+    ],
+    2: [
+      {
+        sender: "ChatBot-X",
+        message: "Analyzing your query...",
+        time: "10:05",
+      },
+    ],
+    // Add more conversations as needed
+  };
+
+  if (!selectedAIContact) {
+    //set the first object of coonntact from the recentrCHatContacts to the setSelected conact
+    setSelectedAIContact(recentChatContacts[0]);
+  }
+
+  let bot = aiContacts.find((bot) => bot.id === selectedAIContact.botId);
+
+  return <div>HI</div>;
+};
+
+export default UserChat;
+
+
 "use client";
 import { createContext, useContext, useState, useEffect } from "react";
 import { ThemeProvider } from "next-themes";
@@ -7,67 +58,154 @@ import axios from "axios";
 const AppContext = createContext();
 
 export function AppProvider({ children }) {
+  const defaultBots = [
+    {
+      id: "unique-id-123",
+      name: "Grok",
+      apiKey: "sk-xyz...",
+      endpoint: "https://api.xai.com/v1/chat",
+      model: "grok-3",
+      avatar: "/ai/grok/grok.png",
+      lastInteraction: "2025-02-21T10:00:00Z",
+      chatHistory: [
+        {
+          sender: "Grok",
+          message: "Hello! How can I assist you today?",
+          timestamp: "2025-02-21T10:00:00Z",
+        },
+        {
+          sender: "User",
+          message: "Can you help me with coding?",
+          timestamp: "2025-02-21T10:01:00Z",
+        },
+        {
+          sender: "Grok",
+          message: "Of course! What coding problem are you facing?",
+          timestamp: "2025-02-21T10:02:00Z",
+        },
+      ],
+    },
+    {
+      id: "unique-id-124",
+      name: "Gemini",
+      apiKey: "sk-xyz...",
+      endpoint:
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateText",
+      model: "gemini-pro",
+      avatar: "/ai/google/gemini.png",
+      lastInteraction: "2025-02-23T10:00:00Z",
+      chatHistory: [
+        {
+          sender: "Gemini",
+          message: "Greetings! What can I do for you?",
+          timestamp: "2025-02-23T10:00:00Z",
+        },
+        {
+          sender: "User",
+          message: "Tell me about AI developments",
+          timestamp: "2025-02-23T10:01:00Z",
+        },
+        {
+          sender: "Gemini",
+          message:
+            "Recent AI developments include improved NLP and image recognition...",
+          timestamp: "2025-02-23T10:02:00Z",
+        },
+      ],
+    },
+    {
+      id: "unique-id-125",
+      name: "GPT-3.5",
+      apiKey: "sk-xyz...",
+      endpoint: "https://api.openai.com/v1/chat/completions",
+      model: "gpt-3.5-turbo",
+      avatar: "/ai/openai/gpt.png",
+      lastInteraction: null,
+      chatHistory: [
+        {
+          sender: "GPT-3.5",
+          message: "Hi there! Ready to chat?",
+          timestamp: "2025-02-22T09:00:00Z",
+        },
+      ],
+    },
+    {
+      id: "unique-id-126",
+      name: "GPT-4",
+      apiKey: "sk-xyz...",
+      endpoint: "https://api.openai.com/v1/chat/completions",
+      model: "gpt-4-turbo",
+      avatar: "/ai/openai/gpt.png",
+      lastInteraction: null,
+      chatHistory: [
+        {
+          sender: "GPT-4",
+          message: "Hello! How may I assist you today?",
+          timestamp: "2025-02-22T15:00:00Z",
+        },
+      ],
+    },
+  ];
+
+  // Sample AI recent chats (using aiContacts data if available)
+
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
 
-  const login = async (username, password) => {
-    // Basic validation
-    if (!username || !password) {
-      setError("Please enter both username and password");
-      setIsSubmitting(false);
-      return;
-    }
+  // useEffect(() => {
+  //   // This code only runs on the client
+  //   const storedToken = localStorage.getItem("token");
+  //   setToken(storedToken);
+  // }, []);
 
-    try {
-      let API_BASE_URL =
-        process.env.REACT_APP_API_BASE_URL || "http://localhost:3001"; // Fallback for local dev
-
-      // Send login request to API endpoint
-
-      const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
-        credentials: "include", // ✅ Important: Allows cookies to be sent/received
-      });
-
-      console.log(res.ok);
-
-      if (!res.ok) {
-        const data = await res.json();
-        console.log(data);
-        setError(data.message || "Invalid credentials");
-      }
-    } catch (err) {
-      console.log(err);
-      setError("An error occurred. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // const login = async (username, password) => {
+  // const login = async (email, password) => {
   //   const response = await fetch("http://localhost:3001/api/auth/login", {
   //     method: "POST",
   //     headers: { "Content-Type": "application/json" },
-  //     body: JSON.stringify({ username, password }), // Change email to username
+  //     body: JSON.stringify({ email, password }),
   //   });
-
   //   if (!response.ok) throw new Error("Login failed");
-
   //   const { token, user } = await response.json();
   //   localStorage.setItem("token", token);
   //   setToken(token);
   //   setUser(user);
   // };
+  const login = async (username, password) => {
+    const response = await fetch("http://localhost:3001/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }), // Change email to username
+    });
+
+    if (!response.ok) throw new Error("Login failed");
+
+    const { token, user } = await response.json();
+    localStorage.setItem("token", token);
+    setToken(token);
+    setUser(user);
+  };
 
   const logout = () => {
     localStorage.removeItem("token");
     setToken(null);
     setUser(null);
   };
+  const recentAIChats = [
+    {
+      botId: "unique-id-123", // References bot from `aiContacts`
+      lastMessage: "How can I assist you today?",
+      time: "2 min ago",
+      unread: 0,
+      status: "online",
+    },
+    {
+      botId: "unique-id-124", // References bot from `aiContacts`
+      lastMessage: "Hi There!!",
+      time: "4 min ago",
+      unread: 0,
+      status: "online",
+    },
+  ];
 
   // AI Contacts State
   const [aiContacts, setAIContacts] = useState([]);

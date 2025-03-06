@@ -1,3 +1,4 @@
+"use client";
 // context/AIContext.js
 import { createContext, useContext, useState, useEffect } from "react";
 

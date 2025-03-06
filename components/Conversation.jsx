@@ -3,7 +3,7 @@ import React from "react";
 import { useState } from "react";
 import Image from "next/image";
 
-const UserChat = () => {
+const Conversation = () => {
   const [audioModalOpen, setAudioModalOpen] = useState(false);
   const [videoModalOpen, setVideoModalOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(null);
@@ -284,4 +284,4 @@ const UserChat = () => {
   );
 };
 
-export default UserChat;
+export default Conversation;

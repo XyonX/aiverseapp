@@ -2,13 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* General Css compoennet */
-@import url("https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&display=swap");
-
-body {
-  @apply overflow-x-hidden text-base font-primary;
-}
-
 /*
 @import "./css/custom/general.css";
 @import "./css/custom/components.css";
