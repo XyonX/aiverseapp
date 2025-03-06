@@ -8,6 +8,8 @@ import axios from "axios";
 const ChatPage = () => {
   const { aiContacts, selectedAIContact, setSelectedAIContact, user } =
     useAppContext();
+  console.log("Chat Page loaded");
+  console.log(user);
   const router = useRouter();
   const { id } = useParams();
   const [conversation, setConversation] = useState(null);
@@ -23,17 +25,22 @@ const ChatPage = () => {
 
   // Fetch conversation when bot is selected
   useEffect(() => {
-    if (!id || !user) return;
+    if (!id || !user) {
+      console.log("The selected bot doest have valid id or user doesnt exist");
+      return;
+    }
 
     const bot = aiContacts.find((bot) => bot._id === id);
     if (bot) {
       setSelectedAIContact(bot);
       fetchConversation(bot._id);
     } else {
+      console.log("Bot not found redirecting ot chat page");
       router.push("/chat");
     }
   }, [id, user, aiContacts, setSelectedAIContact, router]);
 
+  console.log("Starting to fetch conversation");
   const fetchConversation = async (botId) => {
     try {
       const response = await axios.get(
@@ -55,7 +62,10 @@ const ChatPage = () => {
   };
 
   const handleSendMessage = async () => {
-    if (!message.trim() || !selectedAIContact || !user) return;
+    if (!message.trim() || !selectedAIContact || !user) {
+      console.log("Message or selected contact or user not found ");
+      return;
+    }
 
     try {
       let convId = conversation?._id;
@@ -95,6 +105,8 @@ const ChatPage = () => {
   if (!selectedAIContact) {
     return <div>Loading...</div>;
   }
+  console.log("Selected aI CONTACT LOGGING");
+  console.log(selectedAIContact);
 
   return (
     <div className="w-full overflow-hidden transition-all duration-150 bg-white user-chat dark:bg-zinc-800">
@@ -112,7 +124,7 @@ const ChatPage = () => {
                   </div>
                   <div className="mr-3">
                     <Image
-                      src={selectedAIContact.avatar}
+                      src={`http://localhost:3001/uploads/${selectedAIContact.avatar}`}
                       alt={`${selectedAIContact.name} Avatar`}
                       width={36}
                       height={36}
@@ -225,7 +237,7 @@ const ChatPage = () => {
                     >
                       {msg.sender !== "user" && (
                         <Image
-                          src={selectedAIContact.avatar}
+                          src={`http://localhost:3001/uploads/${selectedAIContact.avatar}`}
                           alt=""
                           width={36}
                           height={36}

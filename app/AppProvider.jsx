@@ -1,190 +1,110 @@
 "use client";
 import { createContext, useContext, useState, useEffect } from "react";
 import { ThemeProvider } from "next-themes";
-import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
+// import { redirect } from "next/navigation";
+// import { cookies } from "next/headers";
+// import { verify } from "jsonwebtoken";
+
+// Set axios to include credentials globally for HTTP-only cookies
+axios.defaults.withCredentials = true;
 
 const AppContext = createContext();
 
 export function AppProvider({ children }) {
+  const API_BASE_URL =
+    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
-
-  const login = async (username, password) => {
-    // Basic validation
-    if (!username || !password) {
-      setError("Please enter both username and password");
-      setIsSubmitting(false);
-      return;
-    }
-
-    try {
-      let API_BASE_URL =
-        process.env.REACT_APP_API_BASE_URL || "http://localhost:3001"; // Fallback for local dev
-
-      // Send login request to API endpoint
-
-      const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
-        credentials: "include", // ✅ Important: Allows cookies to be sent/received
-      });
-
-      console.log(res.ok);
-
-      if (!res.ok) {
-        const data = await res.json();
-        console.log(data);
-        setError(data.message || "Invalid credentials");
-      }
-    } catch (err) {
-      console.log(err);
-      setError("An error occurred. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // const login = async (username, password) => {
-  //   const response = await fetch("http://localhost:3001/api/auth/login", {
-  //     method: "POST",
-  //     headers: { "Content-Type": "application/json" },
-  //     body: JSON.stringify({ username, password }), // Change email to username
-  //   });
-
-  //   if (!response.ok) throw new Error("Login failed");
-
-  //   const { token, user } = await response.json();
-  //   localStorage.setItem("token", token);
-  //   setToken(token);
-  //   setUser(user);
-  // };
-
-  const logout = () => {
-    localStorage.removeItem("token");
-    setToken(null);
-    setUser(null);
-  };
-
-  // AI Contacts State
   const [aiContacts, setAIContacts] = useState([]);
-
-  // Selected AI Contact State
   const [selectedAIContact, setSelectedAIContact] = useState(null);
-
-  // Recent AI Contacts
   const [recentChatContacts, setRecentChatContacts] = useState([]);
-
-  // Tab State
-  const [selectedTab, setSelectedTab] = useState("chats"); // Default tab
+  const [selectedTab, setSelectedTab] = useState("chats");
 
   const fetchBots = async () => {
     try {
-      // const response = await axios.get("/api/bots", {
-      //   headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      // });
-      const response = await axios.get("http://localhost:3001/api/bots");
-      console.log(response.data);
+      const response = await axios.get(`${API_BASE_URL}/api/bots`);
       setAIContacts(response.data);
+      console.log(response.data); // Log immediate data
     } catch (error) {
       console.error("Error fetching bots:", error);
     }
   };
+
+  const fetchRecentConversations = async () => {
+    if (!user) {
+      console.log("Usert not loggeed in");
+      return;
+    }
+    try {
+      console.log("Usert  loggeed in");
+      const response = await axios.get(
+        `${API_BASE_URL}/api/conversations/user/${user._id}`
+      );
+      setRecentChatContacts(
+        response.data.map((conv) => ({
+          botId: conv.bot._id,
+          lastMessage: conv.messages.length
+            ? conv.messages[conv.messages.length - 1].content
+            : "No messages yet",
+          time: conv.lastMessageTimestamp,
+          botName: conv.bot.name,
+          botAvatar: conv.bot.avatar,
+        }))
+      );
+    } catch (error) {
+      console.error("Error fetching recent conversations:", error);
+    }
+  };
+
+  const login = async (username, password) => {
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/auth/login`, {
+        username,
+        password,
+      });
+      const data = response.data;
+      setUser(data.user);
+      fetchBots();
+      fetchRecentConversations();
+    } catch (error) {
+      console.error("Login error:", error.message);
+      throw error;
+    }
+  };
+
+  const logout = () => {
+    setUser(null);
+    setAIContacts([]);
+    setSelectedAIContact(null);
+    setRecentChatContacts([]);
+  };
+
+  // Add useEffect for initial auth check
   useEffect(() => {
-    fetchBots();
-  }, []);
+    const checkAuth = async () => {
+      try {
+        const response = await axios.get(`${API_BASE_URL}/api/auth/me`);
+        setUser(response.data.user);
+        fetchBots();
+        fetchRecentConversations();
+      } catch (error) {
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // const addAI = async (newAI) => {
-  //   try {
-  //     const response = await axios.post("/api/bots", newAI, {
-  //       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-  //     });
-  //     setAIContacts((prev) => [...prev, response.data]);
-  //   } catch (error) {
-  //     console.error("Error adding AI:", error);
-  //   }
-  // };
+    checkAuth();
+  }, []); // Run once on mount
 
-  // const updateChatHistory = async (botId, message) => {
-  //   try {
-  //     const response = await axios.post(
-  //       `/api/messages/${botId}`,
-  //       { content: message },
-  //       {
-  //         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-  //       }
-  //     );
-  //     // Update frontend state if needed, or rely on Conversation fetching latest messages
-  //   } catch (error) {
-  //     console.error("Error sending message:", error);
-  //   }
-  // };
+  useEffect(() => {
+    if (user) {
+      fetchBots();
+      fetchRecentConversations(); // Uncommented for consistency
+    }
+  }, [user]);
 
-  // // Load AI contacts from localStorage on mount
-  // useEffect(() => {
-  //   try {
-  //     setAIContacts(defaultBots); // Always update AI contacts
-  //     localStorage.setItem("aiContacts", JSON.stringify(defaultBots)); // Overwrite storage on every load
-  //   } catch (error) {
-  //     console.error("Error loading AI contacts:", error);
-  //   }
-  // }, []);
-
-  // // Save AI contacts to localStorage on change
-  // useEffect(() => {
-  //   try {
-  //     if (aiContacts.length > 0) {
-  //       localStorage.setItem("aiContacts", JSON.stringify(aiContacts));
-  //     }
-  //   } catch (error) {
-  //     console.error("Error saving AI contacts:", error);
-  //   }
-  // }, [aiContacts]);
-
-  // // Function to add a new AI contact
-  // const addAI = (newAI) => {
-  //   setAIContacts((prev) => [
-  //     ...prev,
-  //     { ...newAI, id: uuidv4(), chatHistory: [] },
-  //   ]);
-  // };
-  // //Setting up the recent chat contacts
-  // useEffect(() => {
-  //   setRecentChatContacts(recentAIChats);
-  // }, []);
-
-  // // Function to update chat history
-  // const updateChatHistory = (aiId, message, response) => {
-  //   setAIContacts((prev) =>
-  //     prev.map((ai) => {
-  //       if (ai.id === aiId) {
-  //         const userMsg = {
-  //           id: uuidv4(),
-  //           sender: "user",
-  //           content: message,
-  //           timestamp: new Date().toISOString(),
-  //         };
-  //         const aiMsg = {
-  //           id: uuidv4(),
-  //           sender: "ai",
-  //           content: response,
-  //           timestamp: new Date().toISOString(),
-  //         };
-  //         return {
-  //           ...ai,
-  //           chatHistory: [...ai.chatHistory, userMsg, aiMsg],
-  //           lastInteraction: aiMsg.timestamp,
-  //         };
-  //       }
-  //       return ai;
-  //     })
-  //   );
-  // };
-
-  // Function to change tabs
   const changeTab = (tabName) => {
     setSelectedTab(tabName);
   };
@@ -193,18 +113,15 @@ export function AppProvider({ children }) {
     <AppContext.Provider
       value={{
         aiContacts,
-        // addAI,
-        // updateChatHistory,
         selectedTab,
         changeTab,
         selectedAIContact,
         setSelectedAIContact,
         recentChatContacts,
         setRecentChatContacts,
-        user, // Expose user state
-        token, // Expose token state
-        login, // Expose login function
-        logout, // Expose logout function
+        user,
+        login,
+        logout,
       }}
     >
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>

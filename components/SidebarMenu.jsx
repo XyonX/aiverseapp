@@ -24,7 +24,11 @@ const SidebarMenu = () => {
         <div class="hidden lg:my-5 lg:block">
           <a href="index.html" class="block dark:hidden">
             <span>
-              <img src="assets/images/logo.svg" alt="" class="h-[30px]"></img>
+              <img
+                src={`http://localhost:3001/uploads/logo.svg`}
+                alt=""
+                class="h-[50px]"
+              ></img>
             </span>
           </a>
 
@@ -47,7 +51,6 @@ const SidebarMenu = () => {
               <a
                 id="default-tab"
                 onClick={() => {
-          
                   changeTab("profile");
                 }}
                 class="tab-button flex relative items-center justify-center mx-auto h-14 w-14 leading-[14px] group/tab my-2 rounded-lg"
