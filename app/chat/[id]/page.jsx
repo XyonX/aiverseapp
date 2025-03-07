@@ -231,8 +231,8 @@ const ChatPage = () => {
                 messages.map((msg, index) => (
                   <li key={index} className="py-4">
                     <div
-                      className={`flex gap-3 ${
-                        msg.sender === "user" ? "justify-end" : "items-end"
+                      className={`flex gap-3 items-end ${
+                        msg.sender === "user" ? "justify-end" : ""
                       }`}
                     >
                       {msg.sender !== "user" && (
@@ -273,10 +273,7 @@ const ChatPage = () => {
                       </div>
                       {msg.sender === "user" && (
                         <Image
-                          src={
-                            user.avatar ||
-                            "/assets/images/users/user-avatar.png"
-                          }
+                          src={`http://localhost:3001/uploads/${user.avatar}`}
                           alt=""
                           width={36}
                           height={36}
@@ -334,7 +331,7 @@ const ChatPage = () => {
               <div className="bg-white dark:bg-zinc-700 rounded-lg shadow-xl max-w-lg w-full p-6">
                 <div className="text-center">
                   <Image
-                    src={selectedAIContact.avatar}
+                    src={`http://localhost:3001/uploads/${selectedAIContact.avatar}`}
                     alt=""
                     width={96}
                     height={96}
@@ -372,7 +369,7 @@ const ChatPage = () => {
               <div className="bg-white dark:bg-zinc-700 rounded-lg shadow-xl max-w-lg w-full p-6">
                 <div className="text-center">
                   <Image
-                    src={selectedAIContact.avatar}
+                    src={`http://localhost:3001/uploads/${selectedAIContact.avatar}`}
                     alt=""
                     width={96}
                     height={96}

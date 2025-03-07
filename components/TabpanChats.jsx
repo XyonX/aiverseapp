@@ -5,64 +5,12 @@ import "swiper/css";
 import { useAppContext } from "@/app/AppProvider";
 import { useRouter } from "next/navigation";
 const TabPanchats = () => {
-  const users = [
-    {
-      id: 1,
-      name: "Patrick",
-      img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop",
-    },
-    {
-      id: 2,
-      name: "Doris",
-      img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop",
-    },
-    {
-      id: 3,
-      name: "James",
-      img: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=100&h=100&fit=crop",
-    },
-    {
-      id: 4,
-      name: "Sophia",
-      img: "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=100&h=100&fit=crop",
-    },
-    {
-      id: 5,
-      name: "Michael",
-      img: "https://images.unsplash.com/photo-1546820389-44d77e1f3b31?w=100&h=100&crop=faces",
-    },
-    {
-      id: 6,
-      name: "Emma",
-      img: "https://images.unsplash.com/photo-1519058082700-6d29f10ca148?w=100&h=100&fit=crop",
-    },
-    {
-      id: 7,
-      name: "Liam",
-      img: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop",
-    },
-    {
-      id: 8,
-      name: "Olivia",
-      img: "https://images.unsplash.com/photo-1519648023493-d82b5f8d7b8a?w=100&h=100&fit=crop",
-    },
-    {
-      id: 9,
-      name: "William",
-      img: "https://images.unsplash.com/photo-1504257432389-52343af06ae3?w=100&h=100&fit=crop",
-    },
-    {
-      id: 10,
-      name: "Ava",
-      img: "https://images.unsplash.com/photo-1524504388940-b6bc4d47366c?w=100&h=100&fit=crop",
-    },
-  ];
-
   const { aiContacts, setSelectedAIContact, recentChatContacts } =
     useAppContext(); // Get AI contacts from context
   const router = useRouter();
 
   const handleChatClick = (bot) => {
+    console.log(bot);
     setSelectedAIContact(bot); // Set the selected contact in context
     console.log(bot);
     router.push(`/chat/${bot._id}`); // Navigate to chat page with bot name
@@ -139,7 +87,7 @@ const TabPanchats = () => {
         <div className="h-[610px] px-2" data-simplebar>
           <ul className="chat-user-list">
             {recentChatContacts.map((chat) => {
-              let bot = aiContacts.find((bot) => bot.id === chat.botId);
+              let bot = aiContacts.find((bot) => bot._id === chat.botId);
               return (
                 <li
                   key={chat.id}
@@ -151,7 +99,10 @@ const TabPanchats = () => {
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
-                      let bot = aiContacts.find((bot) => bot.id === chat.botId);
+                      let bot = aiContacts.find(
+                        (bot) => bot._id === chat.botId
+                      );
+                      console.log(bot);
                       handleChatClick(bot);
                     }}
                   >
