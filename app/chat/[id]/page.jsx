@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useAppContext } from "@/app/AppProvider";
 import { useParams, useRouter } from "next/navigation";
@@ -18,6 +18,14 @@ const ChatPage = () => {
   const [audioModalOpen, setAudioModalOpen] = useState(false);
   const [videoModalOpen, setVideoModalOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(null);
+
+  // Add these to your component:
+  const fileInputRef = useRef(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+
+  const handleFileSelect = (e) => {
+    setSelectedFile(e.target.files[0]);
+  };
 
   const toggleDropdown = (id) => {
     setDropdownOpen(dropdownOpen === id ? null : id);
@@ -302,6 +310,14 @@ const ChatPage = () => {
                 className="w-full border-0 rounded bg-gray-50 dark:bg-zinc-700 dark:text-gray-300 placeholder:text-sm text-sm"
                 placeholder="Enter Message..."
               />
+              {/* Add hidden file input */}
+              <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                onChange={handleFileSelect}
+                accept="image/*, .pdf, .docx" // Add allowed file types
+              />
               <ul className="flex gap-2">
                 <li>
                   <button className="text-green-500 text-lg">
@@ -309,7 +325,10 @@ const ChatPage = () => {
                   </button>
                 </li>
                 <li>
-                  <button className="text-green-500 text-lg">
+                  <button
+                    className="text-green-500 text-lg"
+                    onClick={() => fileInputRef.current.click()}
+                  >
                     <i className="ri-attachment-line"></i>
                   </button>
                 </li>
