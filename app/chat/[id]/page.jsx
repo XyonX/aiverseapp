@@ -5,50 +5,35 @@ import { useAppContext } from "@/app/AppProvider";
 import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 
-const ChatPage = () => {
+const NewChatPage = () => {
   const { aiContacts, selectedAIContact, setSelectedAIContact, user } =
     useAppContext();
-  console.log("Chat Page loaded");
-  console.log(user);
   const router = useRouter();
   const { id } = useParams();
+
   const [conversation, setConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
+  const fileInputRef = useRef(null);
+
   const [audioModalOpen, setAudioModalOpen] = useState(false);
   const [videoModalOpen, setVideoModalOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(null);
 
-  // Add these to your component:
-  const fileInputRef = useRef(null);
-  const [selectedFile, setSelectedFile] = useState(null);
-
-  const handleFileSelect = (e) => {
-    setSelectedFile(e.target.files[0]);
-  };
-
-  const toggleDropdown = (id) => {
-    setDropdownOpen(dropdownOpen === id ? null : id);
-  };
-
   // Fetch conversation when bot is selected
   useEffect(() => {
-    if (!id || !user) {
-      console.log("The selected bot doest have valid id or user doesnt exist");
-      return;
-    }
+    if (!id || !user) return;
 
     const bot = aiContacts.find((bot) => bot._id === id);
     if (bot) {
       setSelectedAIContact(bot);
       fetchConversation(bot._id);
     } else {
-      console.log("Bot not found redirecting ot chat page");
       router.push("/chat");
     }
   }, [id, user, aiContacts, setSelectedAIContact, router]);
 
-  console.log("Starting to fetch conversation");
   const fetchConversation = async (botId) => {
     try {
       const response = await axios.get(
@@ -64,57 +49,66 @@ const ChatPage = () => {
       }
     } catch (error) {
       console.error("Error fetching conversation:", error);
-      setConversation(null);
       setMessages([]);
     }
   };
 
   const handleSendMessage = async () => {
-    if (!message.trim() || !selectedAIContact || !user) {
-      console.log("Message or selected contact or user not found ");
+    if (!selectedAIContact || !user) return;
+    if (!message.trim() && !selectedFile) return;
+    if (selectedFile && !message.trim()) {
+      alert("Please add a message to explain the file");
       return;
     }
 
     try {
       let convId = conversation?._id;
       if (!convId) {
-        // Create a new conversation if it doesn’t exist
         const convResponse = await axios.post(
           "http://localhost:3001/api/conversations",
-          {
-            userId: user._id,
-            botId: selectedAIContact._id,
-          },
+          { userId: user._id, botId: selectedAIContact._id },
           { withCredentials: true }
         );
         convId = convResponse.data._id;
         setConversation(convResponse.data);
       }
 
-      // Send the message
+      const formData = new FormData();
+      formData.append("conversationId", convId);
+      formData.append("sender", "user");
+      formData.append("textContent", message);
+      if (selectedFile) formData.append("file", selectedFile);
+
       const messageResponse = await axios.post(
         "http://localhost:3001/api/messages",
+        formData,
         {
-          conversationId: convId,
-          sender: "user",
-          content: message,
-        },
-        { withCredentials: true }
+          withCredentials: true,
+          headers: { "Content-Type": "multipart/form-data" },
+        }
       );
 
-      const { userMessage, botMessage } = messageResponse.data; // Assuming backend returns both
+      const { userMessage, botMessage } = messageResponse.data;
       setMessages((prev) => [...prev, userMessage, botMessage]);
       setMessage("");
+      setSelectedFile(null);
+      fileInputRef.current.value = "";
     } catch (error) {
       console.error("Error sending message:", error);
     }
   };
 
+  const handleFileSelect = (e) => {
+    setSelectedFile(e.target.files[0]);
+  };
+
   if (!selectedAIContact) {
-    return <div>Loading...</div>;
+    return (
+      <div className="text-center text-gray-500 dark:text-neutral-400">
+        Loading...
+      </div>
+    );
   }
-  console.log("Selected aI CONTACT LOGGING");
-  console.log(selectedAIContact);
 
   return (
     <div className="w-full overflow-hidden transition-all duration-150 bg-white user-chat dark:bg-zinc-800">
@@ -231,198 +225,136 @@ const ChatPage = () => {
               </div>
             </div>
           </div>
-
-          {/* Chat Conversation */}
-          <div className="h-[80vh] p-4 lg:p-6 overflow-y-auto">
-            <ul>
+          {/* Conversation Area */}
+          <div className="max-w-6xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14 mx-auto">
+            <ul className="mt-4 space-y-5">
               {messages.length > 0 ? (
-                messages.map((msg, index) => (
-                  <li key={index} className="py-4">
-                    <div
-                      className={`flex gap-3 items-end ${
-                        msg.sender === "user" ? "justify-end" : ""
-                      }`}
+                messages.map((msg, index) =>
+                  msg.sender === "user" ? (
+                    <li
+                      key={index}
+                      className="max-w-2xl ms-auto flex justify-end gap-x-2 sm:gap-x-4"
                     >
-                      {msg.sender !== "user" && (
-                        <Image
-                          src={`http://localhost:3001/uploads/${selectedAIContact.avatar}`}
-                          alt=""
-                          width={36}
-                          height={36}
-                          className="rounded-full"
-                        />
-                      )}
-                      <div
-                        className={msg.sender === "user" ? "text-right" : ""}
-                      >
-                        <div className="flex gap-2 mb-2">
-                          <div
-                            className={`relative px-5 py-3 rounded-lg ${
-                              msg.sender === "user"
-                                ? "bg-blue-500 text-white"
-                                : "bg-green-500 text-white"
-                            }`}
-                          >
-                            <p>{msg.content}</p>
-                            <p className="mt-1 text-xs text-right text-white/50">
-                              <i className="ri-time-line"></i>{" "}
-                              {new Date(msg.timestamp).toLocaleTimeString([], {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="font-medium text-gray-700 dark:text-gray-300 text-sm">
-                          {msg.sender === "user"
-                            ? "You"
-                            : selectedAIContact.name}
+                      <div className="grow text-end space-y-3">
+                        <div className="inline-block bg-blue-600 rounded-lg p-4 shadow-2xs">
+                          <p className="text-sm text-white">
+                            {msg.textContent}
+                          </p>
                         </div>
                       </div>
-                      {msg.sender === "user" && (
-                        <Image
-                          src={`http://localhost:3001/uploads/${user.avatar}`}
-                          alt=""
-                          width={36}
-                          height={36}
-                          className="rounded-full"
-                        />
-                      )}
-                    </div>
-                  </li>
-                ))
+                      <Image
+                        src={`http://localhost:3001/uploads/${user.avatar}`}
+                        alt="User Avatar"
+                        width={38}
+                        height={38}
+                        className="shrink-0 size-9.5 rounded-full"
+                      />
+                    </li>
+                  ) : (
+                    <li key={index} className="flex gap-x-2 sm:gap-x-4">
+                      <Image
+                        src={`http://localhost:3001/uploads/${selectedAIContact.avatar}`}
+                        alt="AI Avatar"
+                        width={38}
+                        height={38}
+                        className="shrink-0 size-9.5 rounded-full"
+                      />
+                      <div className="inline-block bg-white border border-gray-200 rounded-lg p-4 dark:bg-neutral-900 dark:border-neutral-700">
+                        <p className="text-sm text-gray-800 dark:text-white">
+                          {msg.textContent}
+                        </p>
+                      </div>
+                    </li>
+                  )
+                )
               ) : (
-                <li className="py-4 text-center text-gray-500 dark:text-gray-300">
-                  No chat history yet. Start a conversation!
+                <li className="text-center text-gray-500 dark:text-neutral-400">
+                  No messages yet. Start the conversation!
                 </li>
               )}
             </ul>
           </div>
 
-          {/* Chat Input */}
-          <div className="p-6 bg-white border-t border-gray-50 dark:bg-zinc-800 dark:border-zinc-700">
-            <div className="flex gap-2">
-              <input
-                type="text"
+          {/* Input Area */}
+          <div className="max-w-6xl mx-auto sticky bottom-0 z-10 bg-white border-t border-gray-200 pt-2 pb-4 sm:pt-4 sm:pb-6 px-4 sm:px-6 lg:px-0 dark:bg-neutral-900 dark:border-neutral-700">
+            {selectedFile && (
+              <div className="mb-2 p-2 bg-gray-100 dark:bg-neutral-700 rounded">
+                <span className="text-sm text-gray-600 dark:text-neutral-300">
+                  {selectedFile.name}
+                </span>
+                <button
+                  className="text-red-500 text-sm ml-2"
+                  onClick={() => {
+                    setSelectedFile(null);
+                    fileInputRef.current.value = "";
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+            )}
+            <div className="relative">
+              <textarea
+                className="p-3 sm:p-4 pb-12 sm:pb-12 block w-full border-gray-200 rounded-lg sm:text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500"
+                placeholder={
+                  selectedFile ? "Add message..." : "Ask me anything..."
+                }
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                className="w-full border-0 rounded bg-gray-50 dark:bg-zinc-700 dark:text-gray-300 placeholder:text-sm text-sm"
-                placeholder="Enter Message..."
               />
-              {/* Add hidden file input */}
-              <input
-                type="file"
-                ref={fileInputRef}
-                className="hidden"
-                onChange={handleFileSelect}
-                accept="image/*, .pdf, .docx" // Add allowed file types
-              />
-              <ul className="flex gap-2">
-                <li>
-                  <button className="text-green-500 text-lg">
-                    <i className="ri-emotion-happy-line"></i>
-                  </button>
-                </li>
-                <li>
+              <div className="absolute bottom-px inset-x-px p-2 rounded-b-lg bg-white dark:bg-neutral-900">
+                <div className="flex flex-wrap justify-between items-center gap-2">
+                  <div className="flex items-center">
+                    <button
+                      type="button"
+                      className="inline-flex shrink-0 justify-center items-center size-8 rounded-lg text-gray-500 hover:bg-gray-100 dark:text-neutral-500 dark:hover:bg-neutral-700"
+                      onClick={() => fileInputRef.current.click()}
+                    >
+                      <svg
+                        className="shrink-0 size-4"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"
+                        />
+                      </svg>
+                    </button>
+                  </div>
                   <button
-                    className="text-green-500 text-lg"
-                    onClick={() => fileInputRef.current.click()}
-                  >
-                    <i className="ri-attachment-line"></i>
-                  </button>
-                </li>
-                <li>
-                  <button
+                    type="button"
+                    className="inline-flex shrink-0 justify-center items-center size-8 rounded-lg text-white bg-blue-600 hover:bg-blue-500"
                     onClick={handleSendMessage}
-                    className="text-white bg-green-500 rounded px-2 py-1"
                   >
-                    <i className="ri-send-plane-2-fill"></i>
+                    <svg
+                      className="shrink-0 size-3.5"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="currentColor"
+                      viewBox="0 0 16 16"
+                    >
+                      <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z" />
+                    </svg>
                   </button>
-                </li>
-              </ul>
+                </div>
+              </div>
             </div>
+            <input
+              type="file"
+              ref={fileInputRef}
+              className="hidden"
+              onChange={handleFileSelect}
+              accept="image/*, .pdf, .docx"
+            />
           </div>
-
-          {/* Audio Modal */}
-          {audioModalOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-              <div className="bg-white dark:bg-zinc-700 rounded-lg shadow-xl max-w-lg w-full p-6">
-                <div className="text-center">
-                  <Image
-                    src={`http://localhost:3001/uploads/${selectedAIContact.avatar}`}
-                    alt=""
-                    width={96}
-                    height={96}
-                    className="rounded-full mx-auto mb-6"
-                  />
-                  <h5 className="text-gray-800 dark:text-gray-50">
-                    {selectedAIContact.name}
-                  </h5>
-                  <p className="text-gray-500 dark:text-gray-300">
-                    Start Audio Call
-                  </p>
-                  <ul className="flex justify-center mt-10 gap-4">
-                    <li>
-                      <button
-                        className="w-12 h-12 bg-red-500 text-white rounded-full"
-                        onClick={() => setAudioModalOpen(false)}
-                      >
-                        <i className="ri-close-fill text-xl"></i>
-                      </button>
-                    </li>
-                    <li>
-                      <button className="w-12 h-12 bg-green-500 text-white rounded-full">
-                        <i className="ri-phone-fill text-xl"></i>
-                      </button>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Video Modal */}
-          {videoModalOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-              <div className="bg-white dark:bg-zinc-700 rounded-lg shadow-xl max-w-lg w-full p-6">
-                <div className="text-center">
-                  <Image
-                    src={`http://localhost:3001/uploads/${selectedAIContact.avatar}`}
-                    alt=""
-                    width={96}
-                    height={96}
-                    className="rounded-full mx-auto mb-6"
-                  />
-                  <h5 className="text-gray-800 dark:text-gray-50">
-                    {selectedAIContact.name}
-                  </h5>
-                  <p className="text-gray-500 dark:text-gray-300">
-                    Start Video Call
-                  </p>
-                  <ul className="flex justify-center mt-10 gap-4">
-                    <li>
-                      <button
-                        className="w-12 h-12 bg-red-500 text-white rounded-full"
-                        onClick={() => setVideoModalOpen(false)}
-                      >
-                        <i className="ri-close-fill text-xl"></i>
-                      </button>
-                    </li>
-                    <li>
-                      <button className="w-12 h-12 bg-green-500 text-white rounded-full">
-                        <i className="ri-vidicon-fill text-xl"></i>
-                      </button>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>
   );
 };
 
-export default ChatPage;
+export default NewChatPage;

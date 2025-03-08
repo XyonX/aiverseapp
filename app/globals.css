@@ -118,3 +118,29 @@ input:checked ~ .dot {
     transform: translateX(0);
   }
 }
+
+/* Add to your global CSS */
+input[type="file"]::-webkit-file-upload-button {
+  visibility: hidden;
+}
+
+input[type="file"]::before {
+  content: "Select File";
+  display: inline-block;
+  background: #059669;
+  border: 1px solid #0d9488;
+  border-radius: 3px;
+  padding: 5px 8px;
+  color: white;
+  cursor: pointer;
+}
+
+/* Add these to your CSS if not already present */
+.ProseMirror {
+  max-width: 100%;
+  overflow-wrap: break-word;
+}
+
+.ProseMirror pre {
+  white-space: pre-wrap;
+}
