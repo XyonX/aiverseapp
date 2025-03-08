@@ -19,7 +19,7 @@ export function AppProvider({ children }) {
   const [aiContacts, setAIContacts] = useState([]);
   const [selectedAIContact, setSelectedAIContact] = useState(null);
   const [recentChatContacts, setRecentChatContacts] = useState([]);
-  const [selectedTab, setSelectedTab] = useState("chats");
+  const [activeTab, setActiveTab] = useState("chats");
 
   const fetchBots = async () => {
     try {
@@ -106,14 +106,14 @@ export function AppProvider({ children }) {
   }, [user]);
 
   const changeTab = (tabName) => {
-    setSelectedTab(tabName);
+    setActiveTab(tabName);
   };
 
   return (
     <AppContext.Provider
       value={{
         aiContacts,
-        selectedTab,
+        activeTab,
         changeTab,
         selectedAIContact,
         setSelectedAIContact,

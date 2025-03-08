@@ -38,17 +38,17 @@ import TabpanContacts from "./TabpanContacts";
 import TabpanSettings from "./TabpanSettings";
 
 const ChatLeftSidebar = () => {
-  const { selectedTab } = useAppContext();
+  const { activeTab } = useAppContext();
   return (
     <div className="chat-leftsidebar lg:w-[380px] bg-gray-50 dark:bg-neutral-800 shadow overflow-y-hidden mb-[80px] lg:mb-0">
       <div>
         <div className="tab-content active">
-          {selectedTab === "chats" && <TabPanchats2 />}
+          {activeTab === "chats" && <TabPanchats2 />}
 
-          {selectedTab === "profile" && <TabpanProfile />}
-          {selectedTab === "groups" && <TabpanGroups />}
-          {selectedTab === "contacts" && <TabpanContacts />}
-          {selectedTab === "settings" && <TabpanSettings />}
+          {activeTab === "profile" && <TabpanProfile />}
+          {activeTab === "groups" && <TabpanGroups />}
+          {activeTab === "contacts" && <TabpanContacts />}
+          {activeTab === "settings" && <TabpanSettings />}
         </div>
       </div>
     </div>

@@ -7,198 +7,359 @@ import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { useAppContext } from "@/app/AppProvider";
 
-const SidebarMenu = () => {
+const SidebarMenu = ({ isMobile = false }) => {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  const { selectedTab, changeTab } = useAppContext();
+  const { activeTab, changeTab } = useAppContext();
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  if (!mounted) return null; // Avoid hydration mismatch
+  if (!mounted) return null;
 
-  return (
-    <>
-      <div class="sidebar-menu  w-full lg:w-[75px] shadow lg:flex lg:flex-col flex flex-row justify-between items-center fixed lg:relative z-40 bottom-0 bg-white dark:bg-zinc-600 ">
-        <div class="hidden lg:my-5 lg:block">
-          <a href="index.html" class="block dark:hidden">
-            <span>
-              <img
-                src={`http://localhost:3001/uploads/logo.svg`}
-                alt=""
-                class="h-[50px]"
-              ></img>
-            </span>
-          </a>
-
-          <a href="index.html" class="hidden dark:block">
-            <span>
-              <img src="assets/images/logo.svg" alt="" class="h-[30px]"></img>
-            </span>
-          </a>
-        </div>
-        {/**  <!-- end navbar-brand-box --> */}
-
-        {/* <!-- Start side-menu nav --> */}
-        {/* <!-- Tabs --> */}
-        <div class="w-full mx-auto lg:my-auto">
-          <ul
-            id="tabs"
-            class="flex flex-row justify-center w-full lg:flex-col lg:flex nav-tabs"
+  // Mobile bottom navigation
+  if (isMobile) {
+    return (
+      <div className="flex justify-around items-center h-16">
+        <button
+          onClick={() => changeTab("profile")}
+          className={`flex flex-col justify-center items-center w-full h-full ${
+            activeTab === "profile"
+              ? "text-blue-600 dark:text-blue-500"
+              : "text-gray-500 dark:text-gray-400"
+          }`}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           >
-            <li class="flex-grow lg:flex-grow-0">
-              <a
-                id="default-tab"
-                onClick={() => {
-                  changeTab("profile");
-                }}
-                class="tab-button flex relative items-center justify-center mx-auto h-14 w-14 leading-[14px] group/tab my-2 rounded-lg"
-              >
-                <div class="absolute items-center hidden -top-10 ltr:left-0 group-hover/tab:flex rtl:right-0">
-                  <div class="absolute -bottom-1 left-[40%] w-3 h-3 rotate-45 bg-black"></div>
-                  <span class="relative z-10 p-2 text-xs leading-none text-white whitespace-no-wrap bg-black rounded shadow-lg">
-                    Profile
-                  </span>
-                </div>
-                <i class="text-2xl ri-user-2-line"></i>
-              </a>
-            </li>
-            <li class="flex-grow lg:flex-grow-0">
-              <a
-                onClick={() => changeTab("chats")}
-                class="tab-button active relative flex items-center justify-center mx-auto h-14 w-14 leading-[14px] group/tab my-2 rounded-lg"
-              >
-                <div class="absolute items-center hidden -top-10 ltr:left-0 group-hover/tab:flex rtl:right-0">
-                  <div class="absolute -bottom-1 left-[40%] w-3 h-3 rotate-45 bg-black"></div>
-                  <span class="relative z-10 p-2 text-xs leading-none text-white whitespace-no-wrap bg-black rounded shadow-lg">
-                    Chats
-                  </span>
-                </div>
-                <i class="text-2xl ri-message-3-line"></i>
-              </a>
-            </li>
-            <li class="flex-grow lg:flex-grow-0">
-              <a
-                onClick={() => changeTab("groups")}
-                class="tab-button relative flex items-center justify-center mx-auto h-14 w-14 leading-[14px] group/tab my-2 rounded-lg"
-              >
-                <div class="absolute items-center hidden -top-10 ltr:left-0 group-hover/tab:flex rtl:right-0">
-                  <div class="absolute -bottom-1 left-[40%] w-3 h-3 rotate-45 bg-black"></div>
-                  <span class="relative z-10 p-2 text-xs leading-none text-white whitespace-no-wrap bg-black rounded shadow-lg">
-                    Groups
-                  </span>
-                </div>
-                <i class="text-2xl ri-group-line"></i>
-              </a>
-            </li>
-            <li class="flex-grow lg:flex-grow-0">
-              <a
-                onClick={() => changeTab("contacts")}
-                class="tab-button relative flex items-center justify-center mx-auto h-14 w-14 leading-[14px] group/tab my-2 rounded-lg"
-              >
-                <div class="absolute items-center hidden -top-10 ltr:left-0 group-hover/tab:flex rtl:right-0">
-                  <div class="absolute -bottom-1 left-[40%] w-3 h-3 rotate-45 bg-black"></div>
-                  <span class="relative z-10 p-2 text-xs leading-none text-white whitespace-no-wrap bg-black rounded shadow-lg">
-                    Contacts
-                  </span>
-                </div>
-                <i class="text-2xl ri-contacts-line"></i>
-              </a>
-            </li>
-            <li class="flex-grow lg:flex-grow-0">
-              <a
-                onClick={() => changeTab("settings")}
-                class="tab-button relative flex items-center justify-center mx-auto h-14 w-14 leading-[14px] group/tab my-2 rounded-lg"
-              >
-                <div class="absolute items-center hidden -top-10 ltr:left-0 group-hover/tab:flex rtl:right-0">
-                  <div class="absolute -bottom-1 left-[40%] w-3 h-3 rotate-45 bg-black"></div>
-                  <span class="relative z-10 p-2 text-xs leading-none text-white whitespace-no-wrap bg-black rounded shadow-lg">
-                    Settings
-                  </span>
-                </div>
-                <i class="text-2xl ri-settings-2-line"></i>
-              </a>
-            </li>
-          </ul>
-        </div>
+            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+          <span className="text-xs mt-1">Profile</span>
+        </button>
 
-        <div class="w-20 my-5 lg:w-auto">
-          <ul class="lg:block">
-            <li class="hidden text-center light-dark-mode nav-item lg:block">
-              <button
-                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                className="text-2xl text-gray-500 dark:text-violet-100/80"
-              >
-                {theme === "dark" ? (
-                  <i className="ri-sun-line"></i> // Sun icon for light mode
-                ) : (
-                  <i className="ri-moon-clear-line"></i> // Moon icon for dark mode
-                )}
-              </button>
-            </li>
+        <button
+          onClick={() => changeTab("chats")}
+          className={`flex flex-col justify-center items-center w-full h-full ${
+            activeTab === "chats"
+              ? "text-blue-600 dark:text-blue-500"
+              : "text-gray-500 dark:text-gray-400"
+          }`}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+          <span className="text-xs mt-1">Chats</span>
+        </button>
 
-            <li class="relative lg:mt-4 dropdown lg:dropup">
-              <a
-                href="#"
-                class="dropdown-toggle"
-                id="dropdownButton2"
-                data-bs-toggle="dropdown"
-              >
-                <img
-                  src="assets/images/users/avatar-1.jpg"
-                  alt=""
-                  class="w-10 h-10 p-1 mx-auto rounded-full bg-gray-50 dark:bg-zinc-700"
-                ></img>{" "}
-              </a>
+        <button
+          onClick={() => changeTab("groups")}
+          className={`flex flex-col justify-center items-center w-full h-full ${
+            activeTab === "groups"
+              ? "text-blue-600 dark:text-blue-500"
+              : "text-gray-500 dark:text-gray-400"
+          }`}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
+          <span className="text-xs mt-1">Groups</span>
+        </button>
 
-              <ul
-                class="absolute z-40 hidden float-left w-40 py-2 mx-4 mb-12 text-left list-none bg-white border-none rounded-lg shadow-lg dropdown-menu bg-clip-padding dark:bg-zinc-700"
-                aria-labelledby="dropdownButton2"
+        <button
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          className="flex flex-col justify-center items-center w-full h-full text-gray-500 dark:text-gray-400"
+        >
+          {theme === "dark" ? (
+            <>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               >
-                <li>
-                  <a
-                    class="block w-full px-4 py-2 text-sm font-normal text-gray-700 bg-transparent dropdown-item whitespace-nowrap hover:bg-gray-100/30 dark:text-gray-100 dark:hover:bg-zinc-600/50 ltr:text-left rtl:text-right"
-                    href="#"
-                  >
-                    Profile{" "}
-                    <i class="text-gray-500 rtl:float-left ltr:float-right ri-profile-line text-16"></i>
-                  </a>
-                </li>
-                <li>
-                  <a
-                    class="block w-full px-4 py-2 text-sm font-normal text-gray-700 bg-transparent dropdown-item whitespace-nowrap hover:bg-gray-100/30 dark:text-gray-100 dark:hover:bg-zinc-600/50 ltr:text-left rtl:text-right"
-                    href="#"
-                  >
-                    Setting{" "}
-                    <i class="text-gray-500 rtl:float-left ltr:float-right ri-settings-3-line text-16"></i>
-                  </a>
-                </li>
-                <li>
-                  <a
-                    class="block w-full px-4 py-2 text-sm font-normal text-gray-700 bg-transparent dropdown-item whitespace-nowrap hover:bg-gray-100/30 dark:text-gray-100 dark:hover:bg-zinc-600/50 ltr:text-left rtl:text-right"
-                    href="auth-lock-screen.html"
-                  >
-                    Lock Screen{" "}
-                    <i class="text-gray-500 rtl:float-left ltr:float-right ri-git-repository-private-line text-16"></i>
-                  </a>
-                </li>
-                <li class="my-2 border-b border-gray-100/20"></li>
-                <li>
-                  <a
-                    class="block w-full px-4 py-2 text-sm font-normal text-gray-700 bg-transparent dropdown-item whitespace-nowrap hover:bg-gray-100/30 dark:text-gray-100 dark:hover:bg-zinc-600/50 ltr:text-left rtl:text-right"
-                    href="auth-login.html"
-                  >
-                    Log out{" "}
-                    <i class="text-gray-500 rtl:float-left ltr:float-right ri-logout-circle-r-line text-16"></i>
-                  </a>
-                </li>
-              </ul>
-            </li>
-          </ul>
+                <circle cx="12" cy="12" r="5" />
+                <line x1="12" y1="1" x2="12" y2="3" />
+                <line x1="12" y1="21" x2="12" y2="23" />
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                <line x1="1" y1="12" x2="3" y2="12" />
+                <line x1="21" y1="12" x2="23" y2="12" />
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+              </svg>
+              <span className="text-xs mt-1">Light</span>
+            </>
+          ) : (
+            <>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+              </svg>
+              <span className="text-xs mt-1">Dark</span>
+            </>
+          )}
+        </button>
+      </div>
+    );
+  }
+
+  // Desktop sidebar
+  return (
+    <div className="flex flex-col w-[70px] h-screen bg-white border-r border-gray-200 dark:bg-neutral-800 dark:border-neutral-700">
+      {/* Logo */}
+      <div className="flex justify-center py-6">
+        <Link href="/" className="flex-none">
+          <svg
+            className="w-8 h-8"
+            viewBox="0 0 38 38"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <rect width="38" height="38" rx="6" fill="#2563EB" />
+            <path
+              d="M10 28V18.64C10 13.8683 14.0294 10 19 10C23.9706 10 28 13.8683 28 18.64C28 23.4117 23.9706 27.28 19 27.28H18.25"
+              stroke="white"
+              strokeWidth="1.5"
+            />
+            <path
+              d="M13 28V18.7552C13 15.5104 15.6863 12.88 19 12.88C22.3137 12.88 25 15.5104 25 18.7552C25 22 22.3137 24.6304 19 24.6304H18.25"
+              stroke="white"
+              strokeWidth="1.5"
+            />
+            <ellipse cx="19" cy="18.6554" rx="3.75" ry="3.6" fill="white" />
+          </svg>
+        </Link>
+      </div>
+
+      {/* Navigation */}
+      <div className="flex-1 flex flex-col items-center py-6 space-y-8">
+        <button
+          onClick={() => changeTab("profile")}
+          className={`flex justify-center items-center w-10 h-10 rounded-lg ${
+            activeTab === "profile"
+              ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-500"
+              : "text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-neutral-700"
+          }`}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+        </button>
+
+        <button
+          onClick={() => changeTab("chats")}
+          className={`flex justify-center items-center w-10 h-10 rounded-lg ${
+            activeTab === "chats"
+              ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-500"
+              : "text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-neutral-700"
+          }`}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+        </button>
+
+        <button
+          onClick={() => changeTab("groups")}
+          className={`flex justify-center items-center w-10 h-10 rounded-lg ${
+            activeTab === "groups"
+              ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-500"
+              : "text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-neutral-700"
+          }`}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
+        </button>
+
+        <button
+          onClick={() => changeTab("contacts")}
+          className={`flex justify-center items-center w-10 h-10 rounded-lg ${
+            activeTab === "contacts"
+              ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-500"
+              : "text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-neutral-700"
+          }`}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+            <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+          </svg>
+        </button>
+
+        <button
+          onClick={() => changeTab("settings")}
+          className={`flex justify-center items-center w-10 h-10 rounded-lg ${
+            activeTab === "settings"
+              ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-500"
+              : "text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-neutral-700"
+          }`}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Bottom Section */}
+      <div className="flex flex-col items-center py-6 space-y-4">
+        {/* Theme Toggle */}
+        <button
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          className="flex justify-center items-center w-10 h-10 rounded-lg text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-neutral-700"
+        >
+          {theme === "dark" ? (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="12" cy="12" r="5" />
+              <line x1="12" y1="1" x2="12" y2="3" />
+              <line x1="12" y1="21" x2="12" y2="23" />
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+              <line x1="1" y1="12" x2="3" y2="12" />
+              <line x1="21" y1="12" x2="23" y2="12" />
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+            </svg>
+          ) : (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
+          )}
+        </button>
+
+        {/* User Profile */}
+        <div className="relative">
+          <button className="flex justify-center items-center w-10 h-10 rounded-full overflow-hidden border-2 border-gray-200 dark:border-neutral-700">
+            <img
+              src="/placeholder.svg?height=40&width=40"
+              alt="User Avatar"
+              className="w-full h-full object-cover"
+            />
+          </button>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

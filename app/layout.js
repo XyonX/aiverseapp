@@ -19,38 +19,8 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    // <html lang="en">
-    //   <head></head>
-    //   <body className="lg:flex">
-    //     <AppProvider>
-    //       {/*
-    //       // SidebarMenu: A responsive navigation sidebar for the AI chat app.
-    //       // Features theme toggle (light/dark), tabbed navigation (Profile, Chats, Groups, Contacts, Settings),
-    //       // and a user dropdown with options (Profile, Settings, Lock Screen, Logout).
-    //       // Renders vertically on large screens, horizontally on mobile, with tooltips and hydration handling.
-    //     */}
-    //       <SidebarMenu />
-    //       {/*
-
-    //       // ChatLeftSidebar: Left sidebar for AI chat app with tabbed sections (Profile, Chats, Groups, Contacts, Settings).
-    //       // Default active tab is Chats. Supports theme colors (violet, green, red) and dark mode, with a fixed width of 380px on large screens.
-    //       // TabPanchats: Chats tab content with search bar, Swiper.js user status carousel (10 users), and scrollable recent chat list.
-    //       // Features theme-based styling, hover effects, and status indicators (online/offline). Client-side component with responsive design.
-
-    //        */}
-    //       <ChatLeftSidebar />
-    //       {/*
-    //       // UserChat: Main chat interface for AI chat app. Displays user header with actions (search, audio/video calls, more options),
-    //       // scrollable conversation area, and message input. Includes audio/video call modals. Responsive design with light/dark theme support.
-    //       */}
-    //       {/* <UserChat /> */}
-    //       {children}
-    //     </AppProvider>
-    //   </body>
-    // </html>
-    <html lang="en">
-      <head />
-      <body>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body className="bg-gray-50 dark:bg-neutral-900 font-sans">
         <AppProvider>{children}</AppProvider>
       </body>
     </html>
