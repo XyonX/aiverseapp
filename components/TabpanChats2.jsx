@@ -268,6 +268,10 @@ const TabPanchats2 = () => {
                 className={`px-4 py-3 hover:bg-gray-50 dark:hover:bg-neutral-700 cursor-pointer 
                   "bg-blue-50 dark:bg-blue-900/20" 
                 `}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleChatClick(bot);
+                }}
               >
                 <div className="flex items-center">
                   {/* Avatar */}
