@@ -7,7 +7,8 @@ import { useRouter } from "next/navigation";
 const RecentChats = () => {
   const { aiContacts } = useAppContext();
   const router = useRouter();
-  const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
+  const BACKEND_URL =
+    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
 
   const handleChatClick = (bot) => {
     console.log(bot);

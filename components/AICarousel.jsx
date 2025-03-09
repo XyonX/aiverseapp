@@ -9,7 +9,8 @@ const AICarousel = () => {
   const { aiContacts } = useAppContext();
   const router = useRouter();
 
-  let BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001"; // Fallback for local dev
+  const BACKEND_URL =
+    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001"; // Fallback for local dev
 
   const handleChatClick = (bot) => {
     console.log(bot);

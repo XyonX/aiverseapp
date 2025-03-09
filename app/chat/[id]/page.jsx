@@ -384,7 +384,9 @@ const NewChatPage = () => {
   const [videoModalOpen, setVideoModalOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(null);
 
-  let BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001"; // Fallback for local dev
+  const BACKEND_URL =
+    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
+  // Fallback for local dev
 
   // Fetch conversation when bot is selected
   useEffect(() => {

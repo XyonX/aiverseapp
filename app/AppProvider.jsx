@@ -12,7 +12,8 @@ axios.defaults.withCredentials = true;
 const AppContext = createContext();
 
 export function AppProvider({ children }) {
-  const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
+  const BACKEND_URL =
+    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
 
   const [user, setUser] = useState(null);
   const [aiContacts, setAIContacts] = useState([]);

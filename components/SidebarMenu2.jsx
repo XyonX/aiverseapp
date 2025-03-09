@@ -11,7 +11,8 @@ const SidebarMenu2 = () => {
   const [mounted, setMounted] = useState(false);
   const { selectedTab, changeTab } = useAppContext();
 
-  const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
+  const BACKEND_URL =
+    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
 
   useEffect(() => {
     setMounted(true);

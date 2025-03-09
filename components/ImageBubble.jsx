@@ -1,10 +1,11 @@
 import React from "react";
 
-const BASE_URL = process.env.BACKEND_BASE_URL || "http://localhost:3001";
+const BACKEND_URL =
+  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
 
 function getFullUrl(path) {
   if (!path) return "";
-  return path.startsWith("http") ? path : `${BASE_URL}${path}`;
+  return path.startsWith("http") ? path : `${BACKEND_URL}${path}`;
 }
 
 function ImageBubble({ message }) {

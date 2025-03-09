@@ -23,7 +23,8 @@ const NewUserChat = () => {
   const [videoModalOpen, setVideoModalOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(null);
 
-  const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
+  const BACKEND_URL =
+    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
 
   // Fetch conversation when bot is selected
   useEffect(() => {
