@@ -1,7 +1,7 @@
-import React from "react";
+import NewUserChat from "@/components/NewUserChat";
 
 const page = () => {
-  return <div>page</div>;
+  return <NewUserChat />;
 };
 
 export default page;

@@ -222,7 +222,11 @@ const TabPanchats2 = () => {
           {onlineBots.map((bot) => (
             <div
               key={bot.id}
-              className="flex flex-col items-center min-w-[60px]"
+              className="flex flex-col items-center min-w-[60px] cursor-pointer"
+              onClick={(e) => {
+                e.preventDefault();
+                handleChatClick(bot);
+              }}
             >
               <div className="relative">
                 <img

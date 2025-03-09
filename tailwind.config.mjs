@@ -75,5 +75,6 @@ module.exports = {
       };
       addUtilities(newUtilities);
     },
+    require("@tailwindcss/typography"),
   ],
 };
