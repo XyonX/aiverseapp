@@ -21,6 +21,8 @@ const ChatPage = () => {
   const [videoModalOpen, setVideoModalOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(null);
 
+  const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
+
   // Add this component for file display
   const FileIndicator = () =>
     selectedFile && (
@@ -73,7 +75,7 @@ const ChatPage = () => {
   const fetchConversation = async (botId) => {
     try {
       const response = await axios.get(
-        `http://localhost:3001/api/conversations/user/${user._id}/bot/${botId}`,
+        `${BACKEND_URL}/api/conversations/user/${user._id}/bot/${botId}`,
         { withCredentials: true }
       );
       if (response.data) {
@@ -109,7 +111,7 @@ const ChatPage = () => {
       if (!convId) {
         // Create a new conversation if it doesn’t exist
         const convResponse = await axios.post(
-          "http://localhost:3001/api/conversations",
+          `${BACKEND_URL}/api/conversations`,
           {
             userId: user._id,
             botId: selectedAIContact._id,
@@ -131,7 +133,7 @@ const ChatPage = () => {
 
       // Send the message
       const messageResponse = await axios.post(
-        "http://localhost:3001/api/messages",
+        `${BACKEND_URL}/api/messages`,
         formData,
         {
           withCredentials: true,
@@ -172,7 +174,7 @@ const ChatPage = () => {
                   </div>
                   <div className="mr-3">
                     <Image
-                      src={`http://localhost:3001/uploads/${selectedAIContact.avatar}`}
+                      src={`${BACKEND_URL}/uploads/${selectedAIContact.avatar}`}
                       alt={`${selectedAIContact.name} Avatar`}
                       width={36}
                       height={36}
@@ -409,7 +411,7 @@ const ChatPage = () => {
               <div className="bg-white dark:bg-zinc-700 rounded-lg shadow-xl max-w-lg w-full p-6">
                 <div className="text-center">
                   <Image
-                    src={`http://localhost:3001/uploads/${selectedAIContact.avatar}`}
+                    src={`${BACKEND_URL}/uploads/${selectedAIContact.avatar}`}
                     alt=""
                     width={96}
                     height={96}
@@ -447,7 +449,7 @@ const ChatPage = () => {
               <div className="bg-white dark:bg-zinc-700 rounded-lg shadow-xl max-w-lg w-full p-6">
                 <div className="text-center">
                   <Image
-                    src={`http://localhost:3001/uploads/${selectedAIContact.avatar}`}
+                    src={`${BACKEND_URL}/uploads/${selectedAIContact.avatar}`}
                     alt=""
                     width={96}
                     height={96}

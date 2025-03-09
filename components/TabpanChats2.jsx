@@ -178,6 +178,8 @@ const TabPanchats2 = () => {
     console.log(aiContacts);
   }, [aiContacts]);
 
+  const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
+
   return (
     <div className="w-full md:w-80 lg:w-96 h-screen border-r border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 overflow-hidden flex flex-col">
       {/* Header */}
@@ -231,8 +233,7 @@ const TabPanchats2 = () => {
               <div className="relative">
                 <img
                   src={
-                    `http://localhost:3001/uploads/${bot.avatar}` ||
-                    "/placeholder.svg"
+                    `${BACKEND_URL}/uploads/${bot.avatar}` || "/placeholder.svg"
                   }
                   alt={bot.name}
                   className="w-12 h-12 rounded-full object-cover"
@@ -284,7 +285,7 @@ const TabPanchats2 = () => {
                     ) : (
                       <img
                         src={
-                          `http://localhost:3001/uploads/${bot.avatar}` ||
+                          `${BACKEND_URL}/uploads/${bot.avatar}` ||
                           "/placeholder.svg"
                         }
                         alt={bot.name}

@@ -11,6 +11,8 @@ const SidebarMenu2 = () => {
   const [mounted, setMounted] = useState(false);
   const { selectedTab, changeTab } = useAppContext();
 
+  const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
+
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -23,7 +25,7 @@ const SidebarMenu2 = () => {
         <a href="index.html" className="block dark:hidden">
           <span>
             <img
-              src={`http://localhost:3001/uploads/logo.svg`}
+              src={`${BACKEND_URL}/uploads/logo.svg`}
               alt=""
               className="h-[50px]"
             />

@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 const RecentChats = () => {
   const { aiContacts } = useAppContext();
   const router = useRouter();
+  const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
 
   const handleChatClick = (bot) => {
     console.log(bot);
@@ -41,7 +42,7 @@ const RecentChats = () => {
                   <div className="relative flex">
                     <div className="relative self-center ltr:mr-3 rtl:ml-3">
                       <img
-                        src={`http://localhost:3001/uploads/${bot.avatar}`}
+                        src={`${BACKEND_URL}/uploads/${bot.avatar}`}
                         className="rounded-full w-9 h-9"
                         alt={bot.name}
                       />

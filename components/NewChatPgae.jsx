@@ -17,6 +17,8 @@ const NewChatPage = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const fileInputRef = useRef(null);
 
+  const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
+
   // Fetch conversation when bot is selected
   useEffect(() => {
     if (!id || !user) return;
@@ -33,7 +35,7 @@ const NewChatPage = () => {
   const fetchConversation = async (botId) => {
     try {
       const response = await axios.get(
-        `http://localhost:3001/api/conversations/user/${user._id}/bot/${botId}`,
+        `${BACKEND_URL}/api/conversations/user/${user._id}/bot/${botId}`,
         { withCredentials: true }
       );
       if (response.data) {
@@ -61,7 +63,7 @@ const NewChatPage = () => {
       let convId = conversation?._id;
       if (!convId) {
         const convResponse = await axios.post(
-          "http://localhost:3001/api/conversations",
+          `${BACKEND_URL}/api/conversations`,
           { userId: user._id, botId: selectedAIContact._id },
           { withCredentials: true }
         );
@@ -76,7 +78,7 @@ const NewChatPage = () => {
       if (selectedFile) formData.append("file", selectedFile);
 
       const messageResponse = await axios.post(
-        "http://localhost:3001/api/messages",
+        `${BACKEND_URL}/api/messages`,
         formData,
         {
           withCredentials: true,
@@ -114,7 +116,7 @@ const NewChatPage = () => {
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
               <Image
-                src={`http://localhost:3001/uploads/${selectedAIContact.avatar}`}
+                src={`${BACKEND_URL}/uploads/${selectedAIContact.avatar}`}
                 alt={`${selectedAIContact.name} Avatar`}
                 width={40}
                 height={40}
@@ -176,7 +178,7 @@ const NewChatPage = () => {
                     </div>
                   </div>
                   <Image
-                    src={`http://localhost:3001/uploads/${user.avatar}`}
+                    src={`${BACKEND_URL}/uploads/${user.avatar}`}
                     alt="User Avatar"
                     width={38}
                     height={38}
@@ -186,7 +188,7 @@ const NewChatPage = () => {
               ) : (
                 <li key={index} className="flex gap-x-2 sm:gap-x-4">
                   <Image
-                    src={`http://localhost:3001/uploads/${selectedAIContact.avatar}`}
+                    src={`${BACKEND_URL}/uploads/${selectedAIContact.avatar}`}
                     alt="AI Avatar"
                     width={38}
                     height={38}

@@ -9,12 +9,14 @@ function Message({ message, selectedAIContact, user }) {
   //const themeColor = isUser ? "blue" : selectedAIContact.themeColor;
   const themeColor = isUser ? "blue" : "red";
 
+  const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
+
   return (
     <li key={message._id} className="py-4">
       <div className={`flex gap-3 items-end ${isUser ? "justify-end" : ""}`}>
         {!isUser && (
           <Image
-            src={`http://localhost:3001/uploads/${selectedAIContact.avatar}`}
+            src={`${BACKEND_URL}/uploads/${selectedAIContact.avatar}`}
             alt=""
             width={36}
             height={36}
@@ -36,7 +38,7 @@ function Message({ message, selectedAIContact, user }) {
         </div>
         {isUser && (
           <Image
-            src={`http://localhost:3001/uploads/${user.avatar}`}
+            src={`${BACKEND_URL}/uploads/${user.avatar}`}
             alt=""
             width={36}
             height={36}

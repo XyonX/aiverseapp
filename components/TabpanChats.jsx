@@ -19,6 +19,8 @@ const TabPanchats = () => {
     console.log(aiContacts);
   });
 
+  const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
+
   return (
     <div>
       {/* Search Section */}
@@ -65,7 +67,7 @@ const TabPanchats = () => {
                 >
                   <div className="relative mx-auto w-9 h-9">
                     <img
-                      src={`http://localhost:3001/uploads/${ai.avatar}`} // Added `/` before ${bot.avatar}
+                      src={`${BACKEND_URL}/uploads/${ai.avatar}`} // Added `/` before ${bot.avatar}
                       alt={ai.name}
                       className="rounded-full w-full h-full"
                     />
@@ -109,7 +111,7 @@ const TabPanchats = () => {
                     <div className="relative flex">
                       <div className="relative self-center ltr:mr-3 rtl:ml-3">
                         <img
-                          src={`http://localhost:3001/uploads/${bot.avatar}`} // Added `/` before ${bot.avatar}
+                          src={`${BACKEND_URL}/uploads/${bot.avatar}`} // Added `/` before ${bot.avatar}
                           className="rounded-full w-9 h-9"
                           alt={bot.name}
                         />

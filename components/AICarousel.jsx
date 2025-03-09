@@ -9,6 +9,8 @@ const AICarousel = () => {
   const { aiContacts } = useAppContext();
   const router = useRouter();
 
+  let BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001"; // Fallback for local dev
+
   const handleChatClick = (bot) => {
     console.log(bot);
     setSelectedAIContact(bot); // Set the selected contact in context
@@ -39,7 +41,7 @@ const AICarousel = () => {
               >
                 <div className="relative mx-auto w-9 h-9">
                   <img
-                    src={`http://localhost:3001/uploads/${ai.avatar}`}
+                    src={`${BACKEND_URL}/uploads/${ai.avatar}`}
                     alt={ai.name}
                     className="rounded-full w-full h-full"
                   />

@@ -23,6 +23,8 @@ const NewUserChat = () => {
   const [videoModalOpen, setVideoModalOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(null);
 
+  const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
+
   // Fetch conversation when bot is selected
   useEffect(() => {
     if (!id || !user) return;
@@ -39,7 +41,7 @@ const NewUserChat = () => {
   const fetchConversation = async (botId) => {
     try {
       const response = await axios.get(
-        `http://localhost:3001/api/conversations/user/${user._id}/bot/${botId}`,
+        `${BACKEND_URL}/api/conversations/user/${user._id}/bot/${botId}`,
         { withCredentials: true }
       );
       if (response.data) {
@@ -67,7 +69,7 @@ const NewUserChat = () => {
       let convId = conversation?._id;
       if (!convId) {
         const convResponse = await axios.post(
-          "http://localhost:3001/api/conversations",
+          `${BACKEND_URL}/api/conversations`,
           { userId: user._id, botId: selectedAIContact._id },
           { withCredentials: true }
         );
@@ -82,7 +84,7 @@ const NewUserChat = () => {
       if (selectedFile) formData.append("file", selectedFile);
 
       const messageResponse = await axios.post(
-        "http://localhost:3001/api/messages",
+        `${BACKEND_URL}/api/messages`,
         formData,
         {
           withCredentials: true,

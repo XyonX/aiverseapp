@@ -12,8 +12,7 @@ axios.defaults.withCredentials = true;
 const AppContext = createContext();
 
 export function AppProvider({ children }) {
-  const API_BASE_URL =
-    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+  const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
 
   const [user, setUser] = useState(null);
   const [aiContacts, setAIContacts] = useState([]);
@@ -23,7 +22,7 @@ export function AppProvider({ children }) {
 
   const fetchBots = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/bots`);
+      const response = await axios.get(`${BACKEND_URL}/api/bots`);
       setAIContacts(response.data);
       console.log(response.data); // Log immediate data
     } catch (error) {
@@ -39,7 +38,7 @@ export function AppProvider({ children }) {
     try {
       console.log("Usert  loggeed in");
       const response = await axios.get(
-        `${API_BASE_URL}/api/conversations/user/${user._id}`
+        `${BACKEND_URL}/api/conversations/user/${user._id}`
       );
       setRecentChatContacts(
         response.data.map((conv) => ({
@@ -59,7 +58,7 @@ export function AppProvider({ children }) {
 
   const login = async (username, password) => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/auth/login`, {
+      const response = await axios.post(`${BACKEND_URL}/api/auth/login`, {
         username,
         password,
       });
@@ -84,7 +83,7 @@ export function AppProvider({ children }) {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/api/auth/me`);
+        const response = await axios.get(`${BACKEND_URL}/api/auth/me`);
         setUser(response.data.user);
         fetchBots();
         fetchRecentConversations();
