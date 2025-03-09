@@ -829,8 +829,12 @@ const NewChatPage = () => {
           <div className="relative">
             <textarea
               className="p-3 sm:p-4 pb-12 sm:pb-12 block w-full border border-gray-200 rounded-lg sm:text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-              placeholder="Ask me anything..."
               rows={3}
+              placeholder={
+                selectedFile ? "Add message..." : "Ask me anything..."
+              }
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
             ></textarea>
 
             {/* Toolbar */}
@@ -865,6 +869,7 @@ const NewChatPage = () => {
                   <button
                     type="button"
                     className="inline-flex shrink-0 justify-center items-center size-8 rounded-lg text-gray-500 hover:bg-gray-100 focus:z-10 focus:outline-hidden focus:bg-gray-100 dark:text-neutral-500 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700"
+                    onClick={() => fileInputRef.current.click()}
                   >
                     <svg
                       className="shrink-0 size-4"
@@ -915,6 +920,7 @@ const NewChatPage = () => {
                   <button
                     type="button"
                     className="inline-flex shrink-0 justify-center items-center size-8 rounded-lg text-white bg-blue-600 hover:bg-blue-500 focus:z-10 focus:outline-hidden focus:bg-blue-500"
+                    onClick={handleSendMessage}
                   >
                     <svg
                       className="shrink-0 size-3.5"
