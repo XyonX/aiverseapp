@@ -78,8 +78,8 @@ const NewChatPage = () => {
       return;
     }
 
-    // Step 1: Create and display the user's message immediately
-    const tempId = `temp-${Date.now()}`; // Unique temporary ID
+    // Create temporary user message only
+    const tempId = `temp-${Date.now()}`;
     const tempUserMessage = {
       _id: tempId,
       conversation: conversation?._id,
@@ -87,22 +87,19 @@ const NewChatPage = () => {
       textContent: message,
       type: "text",
       timestamp: new Date(),
-      isTemporary: true, // Flag to identify temporary messages
+      isTemporary: true,
+      ...(selectedFile && { file: selectedFile }),
     };
 
-    // Add the temporary message to the UI and reset inputs
-    setMessages((prev) => {
-      const newMessages = [...prev, tempUserMessage];
-      console.log("Added temp message:", newMessages);
-      return newMessages;
-    });
+    // Add only user's temporary message immediately
+    setMessages((prev) => [...prev, tempUserMessage]);
     setMessage("");
     setSelectedFile(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
-    setIsBotThinking(true); // Show thinking indicator
+    setIsBotThinking(true);
 
     try {
-      // Step 2: Create or get conversation ID
+      // Get or create conversation
       let convId = conversation?._id;
       if (!convId) {
         const convResponse = await axios.post(
@@ -117,41 +114,114 @@ const NewChatPage = () => {
       // Prepare form data
       const formData = new FormData();
       formData.append("conversationId", convId);
-      formData.append("sender", "user");
       formData.append("textContent", message);
+      formData.append("tempUserMessageId", tempId);
       if (selectedFile) formData.append("file", selectedFile);
 
-      // Send the message to the backend
-      const messageResponse = await axios.post(
-        `${BACKEND_URL}/api/messages`,
-        formData,
-        {
-          withCredentials: true,
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
+      if (selectedAIContact.streamingEnabled) {
+        const response = await fetch(`${BACKEND_URL}/api/messages`, {
+          method: "POST",
+          body: formData,
+          credentials: "include",
+        });
 
-      // Step 3: Update UI with actual messages
-      const { userMessage, botMessage } = messageResponse.data;
-      setMessages((prev) => {
-        // Replace the temporary user message with the actual one
-        const tempIndex = prev.findIndex((msg) => msg._id === tempId);
-        if (tempIndex !== -1) {
-          return [
-            ...prev.slice(0, tempIndex), // Messages before the temp one
-            userMessage, // Actual user message
-            botMessage, // Bot's response
-            ...prev.slice(tempIndex + 1), // Any messages after (unlikely in this case)
-          ];
+        const reader = response.body.getReader();
+        let buffer = "";
+        let botMessageId = null;
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += new TextDecoder().decode(value);
+          const parts = buffer.split("\n\n");
+          buffer = parts.pop() || "";
+
+          for (const part of parts) {
+            if (!part.startsWith("data: ")) continue;
+
+            try {
+              const data = JSON.parse(part.slice(6));
+              switch (data.type) {
+                case "init":
+                  // Replace user temp message and add bot message
+                  setMessages((prev) => [
+                    ...prev.filter((msg) => msg._id !== tempId),
+                    data.userMessage,
+                    { ...data.botMessage, isThinking: true },
+                  ]);
+                  botMessageId = data.botMessage._id;
+                  break;
+
+                case "chunk":
+                  if (botMessageId) {
+                    setMessages((prev) =>
+                      prev.map((msg) =>
+                        msg._id === botMessageId
+                          ? {
+                              ...msg,
+                              textContent: msg.textContent + data.content,
+                              isThinking: false,
+                            }
+                          : msg
+                      )
+                    );
+                  }
+                  break;
+
+                case "complete":
+                  if (botMessageId) {
+                    setMessages((prev) =>
+                      prev.map((msg) =>
+                        msg._id === botMessageId
+                          ? {
+                              ...data.botMessage,
+                              isTemporary: false,
+                            }
+                          : msg
+                      )
+                    );
+                  }
+                  break;
+
+                case "error":
+                  setMessages((prev) =>
+                    prev.filter(
+                      (msg) =>
+                        msg._id !== tempId &&
+                        (!botMessageId || msg._id !== botMessageId)
+                    )
+                  );
+                  alert(`Error: ${data.message}`);
+                  break;
+              }
+            } catch (error) {
+              console.error("Error processing stream:", error);
+            }
+          }
         }
-        // Fallback if temp message isn't found
-        return [...prev, userMessage, botMessage];
-      });
+      } else {
+        // Non-streaming handling
+        const response = await axios.post(
+          `${BACKEND_URL}/api/messages`,
+          formData,
+          {
+            withCredentials: true,
+            headers: { "Content-Type": "multipart/form-data" },
+          }
+        );
+
+        const { userMessage, botMessage } = response.data;
+        setMessages((prev) => [
+          ...prev.filter((msg) => msg._id !== tempId),
+          userMessage,
+          botMessage,
+        ]);
+      }
     } catch (error) {
-      console.error("Error sending message:", error);
-      // On error, remove the temporary message and hide thinking indicator
+      console.error("Message send failed:", error);
       setMessages((prev) => prev.filter((msg) => msg._id !== tempId));
-      setIsBotThinking(false);
+      alert("Failed to send message. Please try again.");
     } finally {
       setIsBotThinking(false);
     }
