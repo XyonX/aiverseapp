@@ -20,6 +20,7 @@ export function AppProvider({ children }) {
   const [selectedAIContact, setSelectedAIContact] = useState(null);
   const [recentChatContacts, setRecentChatContacts] = useState([]);
   const [activeTab, setActiveTab] = useState("chats");
+  const [loading, setLoading] = useState(true);
 
   const fetchBots = async () => {
     try {
