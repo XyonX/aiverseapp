@@ -1,7 +1,6 @@
 import React from "react";
 import Image from "next/image";
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
 
 
 function getFullUrl(path) {
@@ -11,13 +10,15 @@ function getFullUrl(path) {
 
 const ImageBubble = ({ message, sender, userAvatar, botAvatar }) => {
   const { images, textContent } = message;
+  const BACKEND_URL =
+  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
   return (
     <>
       {sender === "bot" ? (
         <li className="flex gap-x-2 sm:gap-x-4">
           <div className="shrink-0">
             <Image
-              src={`http://localhost:3001/uploads/${botAvatar}`}
+              src={`${BACKEND_URL}/uploads/${botAvatar}`}
               width={36}
               height={36}
               className="rounded-full"
@@ -304,7 +305,7 @@ const ImageBubble = ({ message, sender, userAvatar, botAvatar }) => {
           </div>
           <div className="shrink-0">
             <Image
-              src={`http://localhost:3001/uploads/${userAvatar}`}
+              src={`${BACKEND_URL}/uploads/${userAvatar}`}
               width={36}
               height={36}
               className="rounded-full"

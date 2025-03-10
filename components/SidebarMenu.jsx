@@ -12,6 +12,9 @@ const SidebarMenu = ({ isMobile = false }) => {
   const [mounted, setMounted] = useState(false);
   const { activeTab, changeTab } = useAppContext();
 
+  const BACKEND_URL =
+    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
+
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -156,7 +159,11 @@ const SidebarMenu = ({ isMobile = false }) => {
       {/* Logo */}
       <div className="flex justify-center py-6">
         <Link href="/" className="flex-none">
-          <img src="aiverse.png" alt="Aiverse Logo" className="h-[30px]"></img>
+          <img
+            src={`${BACKEND_URL}/uploads/aiverse.png`}
+            alt="Aiverse Logo"
+            className="h-[30px]"
+          ></img>
         </Link>
       </div>
 
