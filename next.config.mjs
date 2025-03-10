@@ -1,7 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ["images.unsplash.com", "localhost"],
+    domains: [
+      "images.unsplash.com",
+      "localhost",
+      "aiverse-backend.onrender.com",
+    ],
   },
 };
 
