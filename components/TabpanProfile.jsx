@@ -14,7 +14,7 @@ const TabpanProfile = () => {
               <i class="text-lg ri-more-2-fill"></i>
             </button>
             <ul
-              class="absolute z-50 block w-40 py-2 text-left list-none bg-white border border-transparent rounded shadow-lg rtl:right-auto rtl:left-0 ltr:left-auto ltr:right-0 my-7 dropdown-menu bg-clip-padding dark:bg-zinc-700 dark:shadow-sm dark:border-zinc-600"
+              class="hidden absolute z-50 block w-40 py-2 text-left list-none bg-white border border-transparent rounded shadow-lg rtl:right-auto rtl:left-0 ltr:left-auto ltr:right-0 my-7 dropdown-menu bg-clip-padding dark:bg-zinc-700 dark:shadow-sm dark:border-zinc-600"
               aria-labelledby="dropdownMenuButtonA"
             >
               <li>

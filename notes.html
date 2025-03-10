@@ -1,0 +1,260 @@
+import React from "react";
+import Image from "next/image";
+import ReactMarkdown from "react-markdown";
+
+const TextBubble = ({ sender, message, userAvatar, botAvatar }) => {
+const BACKEND_URL =
+process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
+
+// Function to format code blocks with correct indentation
+const formatCode = (code) => {
+// Clean up the code slightly, removing leading/trailing newlines
+const cleanCode = code.trim();
+
+// Split into lines and find the minimum leading whitespace
+const lines = cleanCode.split('\n');
+let minWhitespace = Infinity;
+
+for (const line of lines) {
+if (line.trim().length > 0) {
+const leadingSpaceMatch = line.match(/^(\s*)/);
+if (leadingSpaceMatch && leadingSpaceMatch[1]) {
+minWhitespace = Math.min(minWhitespace, leadingSpaceMatch[1].length);
+}
+}
+}
+
+// Remove the minimum whitespace from each line
+const formattedLines = lines.map(line => {
+if (line.trim().length > 0) {
+return line.substring(minWhitespace);
+}
+return line; // Keep empty lines as is
+});
+
+return formattedLines.join('\n');
+
+};
+
+// Function to handle code blocks and apply the formatting
+const renderCodeBlock = ({ node, inline, className, children, ...props }) => {
+if (node.tagName === 'code') {
+if (className && className.startsWith('language-')) {
+// Extract language from class name (e.g., "language-javascript")
+const language = className.slice('language-'.length);
+const formattedCode = formatCode(children[0]); // Format code
+return (
+<pre>
+                    <code className={className} {...props}>
+                        {formattedCode}
+                    </code>
+                </pre>
+);
+} else {
+// Handle inline code or code blocks without a specific language
+return (
+<code className={className} {...props}>
+                {children}
+            </code>
+);
+}
+}
+// For other node types, return the default rendering
+return <code className={className} {...props} />;
+};
+
+return (
+<>
+    {sender === "bot" ? (
+    <li className="flex gap-x-2 sm:gap-x-4">
+        <div className="shrink-0">
+            <Image src={`${BACKEND_URL}/uploads/${botAvatar}`} width={36} height={36} className="rounded-full"
+                alt="Bot avatar" />
+        </div>
+        {/* Moved className to parent div */}
+        <div
+            className="inline-block bg-white border border-gray-200 rounded-lg p-4 dark:bg-neutral-900 dark:border-neutral-700 prose dark:prose-invert">
+            <ReactMarkdown components={{ code: renderCodeBlock, // Use the custom code block renderer }}>
+                {message}
+            </ReactMarkdown>
+        </div>
+    </li>
+    ) : (
+    <li className="max-w-2xl ms-auto flex justify-end gap-x-2 sm:gap-x-4">
+        <div className="grow text-end space-y-3">
+            <div className="inline-block bg-blue-600 rounded-lg p-4 shadow-2xs">
+                <p className="text-sm text-white">
+                    <ReactMarkdown components={{ code: renderCodeBlock, // Use the custom code block renderer }}>
+                        {message}
+                    </ReactMarkdown>
+                </p>
+            </div>
+        </div>
+        <div className="shrink-0">
+            <Image src={`${BACKEND_URL}/uploads/${userAvatar}`} width={36} height={36} className="rounded-full"
+                alt="User avatar" />
+        </div>
+    </li>
+    )}
+</>
+);
+};
+{/* Input */}
+<div className="relative">
+    <textarea
+        className="p-3 sm:p-4 pb-12 sm:pb-12 block w-full border border-gray-200 rounded-lg sm:text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+        rows={3} placeholder={ selectedFile ? "Add message..." : "Ask me anything..." } value={message} onChange={(e)=> setMessage(e.target.value)}
+            ></textarea>
+
+    {/* Toolbar */}
+    <div className="absolute bottom-px inset-x-px p-2 rounded-b-lg bg-white dark:bg-neutral-900">
+        <div className="flex flex-wrap justify-between items-center gap-2">
+            {/* Button Group */}
+            <div className="flex items-center">
+                {/* Mic Button */}
+                <button type="button"
+                    className="inline-flex shrink-0 justify-center items-center size-8 rounded-lg text-gray-500 hover:bg-gray-100 focus:z-10 focus:outline-hidden focus:bg-gray-100 dark:text-neutral-500 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700">
+                    <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"
+                        strokeLinejoin="round">
+                        <rect width="18" height="18" x="3" y="3" rx="2" />
+                        <line x1="9" x2="15" y1="15" y2="9" />
+                    </svg>
+                </button>
+                {/* End Mic Button */}
+
+                {/* Attach Button */}
+                <button type="button"
+                    className="inline-flex shrink-0 justify-center items-center size-8 rounded-lg text-gray-500 hover:bg-gray-100 focus:z-10 focus:outline-hidden focus:bg-gray-100 dark:text-neutral-500 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700"
+                    onClick={()=> fileInputRef.current.click()}
+                    >
+                    <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"
+                        strokeLinejoin="round">
+                        <path
+                            d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                    </svg>
+                </button>
+                {/* End Attach Button */}
+            </div>
+            {/* End Button Group */}
+
+            {/* Button Group */}
+            <div className="flex items-center gap-x-1">
+                {/* Mic Button */}
+                <button type="button"
+                    className="inline-flex shrink-0 justify-center items-center size-8 rounded-lg text-gray-500 hover:bg-gray-100 focus:z-10 focus:outline-hidden focus:bg-gray-100 dark:text-neutral-500 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700">
+                    <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"
+                        strokeLinejoin="round">
+                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                        <line x1="12" x2="12" y1="19" y2="22" />
+                    </svg>
+                </button>
+                {/* End Mic Button */}
+
+                {/* Send Button */}
+                <button type="button"
+                    className="inline-flex shrink-0 justify-center items-center size-8 rounded-lg text-white bg-blue-600 hover:bg-blue-500 focus:z-10 focus:outline-hidden focus:bg-blue-500"
+                    onClick={handleSendMessage}>
+                    <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                        fill="currentColor" viewBox="0 0 16 16">
+                        <path
+                            d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z" />
+                    </svg>
+                </button>
+                {/* End Send Button */}
+            </div>
+            {/* End Button Group */}
+        </div>
+    </div>
+    {/* End Toolbar */}
+</div>,
+export default TextBubble;
+, const handleSendMessage = async () => {
+if (!selectedAIContact || !user) return;
+if (!message.trim() && !selectedFile) return;
+if (selectedFile && !message.trim()) {
+alert("Please add a message to explain the file");
+return;
+}
+
+// Step 1: Create and display the user's message immediately
+const tempId = `temp-${Date.now()}`; // Unique temporary ID
+const tempUserMessage = {
+_id: tempId,
+conversation: conversation?._id,
+sender: "user",
+textContent: message,
+type: "text",
+timestamp: new Date(),
+isTemporary: true, // Flag to identify temporary messages
+};
+
+// Add the temporary message to the UI and reset inputs
+setMessages((prev) => {
+const newMessages = [...prev, tempUserMessage];
+console.log("Added temp message:", newMessages);
+return newMessages;
+});
+setMessage("");
+setSelectedFile(null);
+if (fileInputRef.current) fileInputRef.current.value = "";
+setIsBotThinking(true); // Show thinking indicator
+
+try {
+// Step 2: Create or get conversation ID
+let convId = conversation?._id;
+if (!convId) {
+const convResponse = await axios.post(
+`${BACKEND_URL}/api/conversations`,
+{ userId: user._id, botId: selectedAIContact._id },
+{ withCredentials: true }
+);
+convId = convResponse.data._id;
+setConversation(convResponse.data);
+}
+
+// Prepare form data
+const formData = new FormData();
+formData.append("conversationId", convId);
+formData.append("sender", "user");
+formData.append("textContent", message);
+if (selectedFile) formData.append("file", selectedFile);
+
+// Send the message to the backend
+const messageResponse = await axios.post(
+`${BACKEND_URL}/api/messages`,
+formData,
+{
+withCredentials: true,
+headers: { "Content-Type": "multipart/form-data" },
+}
+);
+
+// Step 3: Update UI with actual messages
+const { userMessage, botMessage } = messageResponse.data;
+setMessages((prev) => {
+// Replace the temporary user message with the actual one
+const tempIndex = prev.findIndex((msg) => msg._id === tempId);
+if (tempIndex !== -1) {
+return [
+...prev.slice(0, tempIndex), // Messages before the temp one
+userMessage, // Actual user message
+botMessage, // Bot's response
+...prev.slice(tempIndex + 1), // Any messages after (unlikely in this case)
+];
+}
+// Fallback if temp message isn't found
+return [...prev, userMessage, botMessage];
+});
+} catch (error) {
+console.error("Error sending message:", error);
+// On error, remove the temporary message and hide thinking indicator
+setMessages((prev) => prev.filter((msg) => msg._id !== tempId));
+setIsBotThinking(false);
+} finally {
+setIsBotThinking(false);
+}
+};

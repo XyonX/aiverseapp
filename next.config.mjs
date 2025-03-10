@@ -5,6 +5,7 @@ const nextConfig = {
       "images.unsplash.com",
       "localhost",
       "aiverse-backend.onrender.com",
+      "backend.aiverseapp.site",
     ],
   },
 };

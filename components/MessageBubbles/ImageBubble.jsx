@@ -1,7 +1,8 @@
 import React from "react";
 import Image from "next/image";
 
-
+const BACKEND_URL =
+  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
 
 function getFullUrl(path) {
   if (!path) return "";
@@ -10,8 +11,7 @@ function getFullUrl(path) {
 
 const ImageBubble = ({ message, sender, userAvatar, botAvatar }) => {
   const { images, textContent } = message;
-  const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
+
   return (
     <>
       {sender === "bot" ? (
