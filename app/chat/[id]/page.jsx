@@ -71,14 +71,27 @@ const NewChatPage = () => {
   };
 
   const handleSendMessage = async () => {
-    if (!selectedAIContact || !user) return;
-    if (!message.trim() && !selectedFile) return;
+    if (!selectedAIContact || !user) {
+      console.warn(
+        "[Message Sender] No selected AI contact or user. Exiting function."
+      );
+      return;
+    }
+    if (!message.trim() && !selectedFile) {
+      console.warn(
+        "[Message Sender] Empty message and no file attached. Exiting function."
+      );
+      return;
+    }
     if (selectedFile && !message.trim()) {
       alert("Please add a message to explain the file");
+      console.warn("[Message Sender] File attached but no message provided.");
       return;
     }
 
-    // Create temporary user message only
+    console.log("[Message Sender] Preparing to send message...");
+
+    // Create temporary user message
     const tempId = `temp-${Date.now()}`;
     const tempUserMessage = {
       _id: tempId,
@@ -91,17 +104,23 @@ const NewChatPage = () => {
       ...(selectedFile && { file: selectedFile }),
     };
 
-    // Add only user's temporary message immediately
+    console.log(
+      "[Message Sender] Adding temporary user message:",
+      tempUserMessage
+    );
     setMessages((prev) => [...prev, tempUserMessage]);
+
     setMessage("");
     setSelectedFile(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
     setIsBotThinking(true);
 
     try {
-      // Get or create conversation
       let convId = conversation?._id;
       if (!convId) {
+        console.log(
+          "[Message Sender] No existing conversation. Creating a new one..."
+        );
         const convResponse = await axios.post(
           `${BACKEND_URL}/api/conversations`,
           { userId: user._id, botId: selectedAIContact._id },
@@ -109,6 +128,12 @@ const NewChatPage = () => {
         );
         convId = convResponse.data._id;
         setConversation(convResponse.data);
+        console.log(
+          "[Message Sender] New conversation created with ID:",
+          convId
+        );
+      } else {
+        console.log("[Message Sender] Using existing conversation ID:", convId);
       }
 
       // Prepare form data
@@ -118,7 +143,16 @@ const NewChatPage = () => {
       formData.append("tempUserMessageId", tempId);
       if (selectedFile) formData.append("file", selectedFile);
 
+      console.log("[Message Sender] Sending message data:", {
+        conversationId: convId,
+        textContent: message,
+        hasFile: !!selectedFile,
+      });
+
       if (selectedAIContact.streamingEnabled) {
+        console.log(
+          "[Message Sender] AI supports streaming responses. Starting streaming..."
+        );
         const response = await fetch(`${BACKEND_URL}/api/messages`, {
           method: "POST",
           body: formData,
@@ -142,9 +176,14 @@ const NewChatPage = () => {
 
             try {
               const data = JSON.parse(part.slice(6));
+              console.log("[Message Sender] Streamed data received:", data);
+
               switch (data.type) {
                 case "init":
-                  // Replace user temp message and add bot message
+                  console.log(
+                    "[Message Sender] Bot message initialized:",
+                    data.botMessage
+                  );
                   setMessages((prev) => [
                     ...prev.filter((msg) => msg._id !== tempId),
                     data.userMessage,
@@ -154,6 +193,10 @@ const NewChatPage = () => {
                   break;
 
                 case "chunk":
+                  console.log(
+                    "[Message Sender] Streaming bot response chunk:",
+                    data.content
+                  );
                   if (botMessageId) {
                     setMessages((prev) =>
                       prev.map((msg) =>
@@ -170,6 +213,10 @@ const NewChatPage = () => {
                   break;
 
                 case "complete":
+                  console.log(
+                    "[Message Sender] Bot response complete:",
+                    data.botMessage
+                  );
                   if (botMessageId) {
                     setMessages((prev) =>
                       prev.map((msg) =>
@@ -185,6 +232,10 @@ const NewChatPage = () => {
                   break;
 
                 case "error":
+                  console.error(
+                    "[Message Sender] Error received from stream:",
+                    data.message
+                  );
                   setMessages((prev) =>
                     prev.filter(
                       (msg) =>
@@ -196,12 +247,15 @@ const NewChatPage = () => {
                   break;
               }
             } catch (error) {
-              console.error("Error processing stream:", error);
+              console.error("[Message Sender] Error processing stream:", error);
             }
           }
         }
       } else {
         // Non-streaming handling
+        console.log(
+          "[Message Sender] AI does not support streaming. Sending standard request..."
+        );
         const response = await axios.post(
           `${BACKEND_URL}/api/messages`,
           formData,
@@ -211,7 +265,14 @@ const NewChatPage = () => {
           }
         );
 
+        console.log(
+          "[Message Sender] Non-streaming response received:",
+          response.data
+        );
+
         const { userMessage, botMessage } = response.data;
+        console.log("[Message Sender] Updating messages with bot response...");
+
         setMessages((prev) => [
           ...prev.filter((msg) => msg._id !== tempId),
           userMessage,
@@ -219,10 +280,13 @@ const NewChatPage = () => {
         ]);
       }
     } catch (error) {
-      console.error("Message send failed:", error);
+      console.error("[Message Sender] Message send failed:", error);
       setMessages((prev) => prev.filter((msg) => msg._id !== tempId));
       alert("Failed to send message. Please try again.");
     } finally {
+      console.log(
+        "[Message Sender] Message send process complete. Resetting bot thinking state."
+      );
       setIsBotThinking(false);
     }
   };
@@ -254,7 +318,7 @@ const NewChatPage = () => {
                 aria-label="Preline"
               >
                 <img
-                  src="aiverse.png"
+                  src={`${BACKEND_URL}/uploads/aiverse.png`}
                   alt="Aiverse Logo"
                   className="h-[30px]"
                 />

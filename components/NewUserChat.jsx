@@ -107,13 +107,6 @@ const NewUserChat = () => {
     setSelectedFile(e.target.files[0]);
   };
 
-  // if (!selectedAIContact) {
-  //   return (
-  //     <div className="text-center text-gray-500 dark:text-neutral-400">
-  //       Loading...
-  //     </div>
-  //   );
-  // }
   return (
     <main id="content" className="flex-1 overflow-hidden flex flex-col h-full">
       {/* Content */}
