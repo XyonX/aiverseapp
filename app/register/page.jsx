@@ -3,6 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAppContext } from "@/app/AppProvider";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  updateProfile,
+} from "firebase/auth";
+import { auth } from "../firebase/config";
 
 export default function RegisterPage() {
   const [username, setUsername] = useState("");
@@ -15,22 +21,51 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("Form submitted");
+    console.log("Username:", username);
+    console.log("Email:", email);
+
     if (password !== confirmPassword) {
+      console.error("Passwords do not match");
       setError("Passwords do not match");
       return;
     }
+
     try {
+      console.log("Creating Firebase user...");
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+      console.log("Firebase user created:", user);
+
+      console.log("Updating user profile...");
+      await updateProfile(user, { displayName: username });
+      console.log("User profile updated");
+
+      console.log("Fetching Firebase ID token...");
+      const idToken = await user.getIdToken();
+      console.log("ID Token:", idToken);
+
+      console.log("Sending registration request to backend...");
       const response = await fetch("http://localhost:3001/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, email, password }),
+        body: JSON.stringify({ idToken, username }),
       });
-      if (!response.ok) throw new Error("Registration failed");
-      const { token, user } = await response.json();
-      localStorage.setItem("token", token);
-      login(email, password); // Auto-login after registration
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Registration failed:", errorText);
+        throw new Error("Registration failed");
+      }
+
+      console.log("Registration successful, redirecting...");
       router.push("/chat");
     } catch (err) {
+      console.error("Error during registration:", err);
       setError(err.message || "Something went wrong");
     }
   };
