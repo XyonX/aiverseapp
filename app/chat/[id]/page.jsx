@@ -150,19 +150,172 @@ const NewChatPage = () => {
       });
 
       if (selectedAIContact.streamingEnabled) {
-        console.log(
-          "[Message Sender] AI supports streaming responses. Starting streaming..."
-        );
-        const response = await fetch(`${BACKEND_URL}/api/messages`, {
-          method: "POST",
-          body: formData,
-          credentials: "include",
-        });
+        // console.log(
+        //   "[Message Sender] AI supports streaming responses. Starting streaming..."
+        // );
+        // const response = await fetch(`${BACKEND_URL}/api/messages`, {
+        //   method: "POST",
+        //   body: formData,
+        //   credentials: "include",
+        // });
 
-        const reader = response.body.getReader();
+        // const reader = response.body.getReader();
+        // let buffer = "";
+        // let botMessageId = null;
+        console.log("[Message Sender] Starting mock streaming...");
+
+        // Mock stream implementation
+        const mockStream = async () => {
+          // Generate temporary IDs
+          const botTempId = `bot-temp-${Date.now()}`;
+
+          // Simulate network delay
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+
+          // Simulate server response
+          const encoder = new TextEncoder();
+          const mockEvents = [
+            JSON.stringify({
+              type: "init",
+              userMessage: { ...tempUserMessage, isTemporary: false },
+              botMessage: {
+                _id: botTempId,
+                conversation: convId,
+                sender: "bot",
+                textContent: "",
+                type: "text",
+                timestamp: new Date(),
+                isThinking: true,
+                isTemporary: true,
+              },
+            }),
+            ...["Hello", "! How", " can I", " help", " you today?"].map(
+              (chunk) => JSON.stringify({ type: "chunk", content: chunk })
+            ),
+            JSON.stringify({
+              type: "complete",
+              botMessage: {
+                _id: botTempId,
+                textContent: "Hello! How can I help you today?",
+                isTemporary: false,
+                timestamp: new Date(),
+              },
+            }),
+          ];
+
+          // Create mock readable stream
+          const stream = new ReadableStream({
+            async start(controller) {
+              for (const event of mockEvents) {
+                controller.enqueue(encoder.encode(`data: ${event}\n\n`));
+                await new Promise((resolve) => setTimeout(resolve, 300));
+              }
+              controller.close();
+            },
+          });
+
+          return {
+            body: stream,
+            getReader: () => stream.getReader(),
+          };
+        };
+
+        // Use mock stream instead of real API call
+        const mockResponse = await mockStream();
+        const reader = mockResponse.getReader();
+
         let buffer = "";
         let botMessageId = null;
 
+        // while (true) {
+        //   const { done, value } = await reader.read();
+        //   if (done) break;
+
+        //   buffer += new TextDecoder().decode(value);
+        //   const parts = buffer.split("\n\n");
+        //   buffer = parts.pop() || "";
+
+        //   for (const part of parts) {
+        //     if (!part.startsWith("data: ")) continue;
+
+        //     try {
+        //       const data = JSON.parse(part.slice(6));
+        //       console.log("[Message Sender] Streamed data received:", data);
+
+        //       switch (data.type) {
+        //         case "init":
+        //           console.log(
+        //             "[Message Sender] Bot message initialized:",
+        //             data.botMessage
+        //           );
+        //           setMessages((prev) => [
+        //             ...prev.filter((msg) => msg._id !== tempId),
+        //             data.userMessage,
+        //             { ...data.botMessage, isThinking: true },
+        //           ]);
+        //           botMessageId = data.botMessage._id;
+        //           break;
+
+        //         case "chunk":
+        //           console.log(
+        //             "[Message Sender] Streaming bot response chunk:",
+        //             data.content
+        //           );
+        //           if (botMessageId) {
+        //             setMessages((prev) =>
+        //               prev.map((msg) =>
+        //                 msg._id === botMessageId
+        //                   ? {
+        //                       ...msg,
+        //                       textContent: msg.textContent + data.content,
+        //                       isThinking: false,
+        //                     }
+        //                   : msg
+        //               )
+        //             );
+        //           }
+        //           break;
+
+        //         case "complete":
+        //           console.log(
+        //             "[Message Sender] Bot response complete:",
+        //             data.botMessage
+        //           );
+        //           if (botMessageId) {
+        //             setMessages((prev) =>
+        //               prev.map((msg) =>
+        //                 msg._id === botMessageId
+        //                   ? {
+        //                       ...data.botMessage,
+        //                       isTemporary: false,
+        //                     }
+        //                   : msg
+        //               )
+        //             );
+        //           }
+        //           break;
+
+        //         case "error":
+        //           console.error(
+        //             "[Message Sender] Error received from stream:",
+        //             data.message
+        //           );
+        //           setMessages((prev) =>
+        //             prev.filter(
+        //               (msg) =>
+        //                 msg._id !== tempId &&
+        //                 (!botMessageId || msg._id !== botMessageId)
+        //             )
+        //           );
+        //           alert(`Error: ${data.message}`);
+        //           break;
+        //       }
+        //     } catch (error) {
+        //       console.error("[Message Sender] Error processing stream:", error);
+        //     }
+        //   }
+        // }
+        // Existing stream processing logic
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
@@ -176,14 +329,10 @@ const NewChatPage = () => {
 
             try {
               const data = JSON.parse(part.slice(6));
-              console.log("[Message Sender] Streamed data received:", data);
+              console.log("[Mock Stream] Processing event:", data.type);
 
               switch (data.type) {
                 case "init":
-                  console.log(
-                    "[Message Sender] Bot message initialized:",
-                    data.botMessage
-                  );
                   setMessages((prev) => [
                     ...prev.filter((msg) => msg._id !== tempId),
                     data.userMessage,
@@ -193,10 +342,6 @@ const NewChatPage = () => {
                   break;
 
                 case "chunk":
-                  console.log(
-                    "[Message Sender] Streaming bot response chunk:",
-                    data.content
-                  );
                   if (botMessageId) {
                     setMessages((prev) =>
                       prev.map((msg) =>
@@ -213,41 +358,30 @@ const NewChatPage = () => {
                   break;
 
                 case "complete":
-                  console.log(
-                    "[Message Sender] Bot response complete:",
-                    data.botMessage
-                  );
                   if (botMessageId) {
                     setMessages((prev) =>
                       prev.map((msg) =>
                         msg._id === botMessageId
-                          ? {
-                              ...data.botMessage,
-                              isTemporary: false,
-                            }
+                          ? { ...data.botMessage, isTemporary: false }
                           : msg
                       )
                     );
                   }
+                  setIsBotThinking(false);
                   break;
 
                 case "error":
-                  console.error(
-                    "[Message Sender] Error received from stream:",
-                    data.message
-                  );
                   setMessages((prev) =>
                     prev.filter(
-                      (msg) =>
-                        msg._id !== tempId &&
-                        (!botMessageId || msg._id !== botMessageId)
+                      (msg) => msg._id !== tempId && msg._id !== botMessageId
                     )
                   );
                   alert(`Error: ${data.message}`);
+                  setIsBotThinking(false);
                   break;
               }
             } catch (error) {
-              console.error("[Message Sender] Error processing stream:", error);
+              console.error("[Mock Stream] Error processing event:", error);
             }
           }
         }
