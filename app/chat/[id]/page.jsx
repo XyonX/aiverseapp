@@ -131,6 +131,7 @@ const NewChatPage = () => {
     const formData = new FormData();
     formData.append("conversationId", convId);
     formData.append("textContent", message);
+    formData.append("userId", user._id);
     formData.append("tempUserMessageId", tempId);
     if (selectedFile) formData.append("file", selectedFile);
 
