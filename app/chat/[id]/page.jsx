@@ -71,6 +71,219 @@ const NewChatPage = () => {
   };
 
   const handleSendMessage = async () => {
+    //error check
+    if (!selectedAIContact && !user) {
+      console.log("select bot or login");
+    }
+    if (!message.trim() && !selectedFile) {
+      console.warn(
+        "[Message Sender] Empty message and no file attached. Exiting function."
+      );
+      return;
+    }
+    if (selectedFile && !message.trim()) {
+      alert("Please add a message to explain the file");
+      console.warn("[Message Sender] File attached but no message provided.");
+      return;
+    }
+    //01 chckign if conversation between user nad bopt exist
+    let convId = conversation?._id;
+    if (!convId) {
+      console.log(
+        "[Message Sender] No existing conversation. Creating a new one..."
+      );
+      const convResponse = await axios.post(
+        `${BACKEND_URL}/api/conversations`,
+        {
+          userId: user._id,
+          botId: selectedAIContact,
+        }
+      );
+      setConversation(convResponse.data);
+      convId = conversation._id;
+      console.log("[Message Sender] New conversation created with ID:", convId);
+    } else {
+      console.log("[Message Sender] Using existing conversation ID:", convId);
+    }
+
+    //02 Create temporary user message
+    const tempId = `temp-${Date.now()}`;
+    const tempUserMessage = {
+      _id: tempId,
+      conversation: conversation?._id,
+      sender: "user",
+      textContent: message,
+      type: "text",
+      timestamp: new Date(),
+      isTemporary: true,
+      ...(selectedFile && { file: selectedFile }),
+    };
+
+    //03 updating allmessage prop to trigger ui refresh
+    setMessages((prev) => [...prev, tempUserMessage]);
+
+    setMessage("");
+    setSelectedFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    setIsBotThinking(true);
+
+    //04 prepare form data
+    const formData = new FormData();
+    formData.append("conversationId", convId);
+    formData.append("textContent", message);
+    formData.append("tempUserMessageId", tempId);
+    if (selectedFile) formData.append("file", selectedFile);
+
+    console.log("[Message Sender] Sending message data:", {
+      conversationId: convId,
+      textContent: message,
+      hasFile: !!selectedFile,
+    });
+
+    if (selectedAIContact.streamingEnabled) {
+      console.log("Streaming is enables");
+      const response = await fetch(`${BACKEND_URL}/api/messages`, {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
+
+      if (!response.ok || !response.body) {
+        console.error("Streaming request failed");
+        return;
+      }
+
+      const reader = response.body.getReader();
+
+      let buffer = "";
+      let botMessageId = `bot-temp-${Date.now()}`;
+      const decoder = new TextDecoder();
+
+      console.log("Starting to read stream...");
+
+      while (true) {
+        const { done, value } = await reader.read();
+
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+
+        // Process streamed events line-by-line
+        const parts = buffer.split("\n\n");
+        buffer = parts.pop(); // Keep unfinished chunk for the next iteration
+
+        for (const part of parts) {
+          if (!part.startsWith("data: ")) continue;
+
+          try {
+            const data = JSON.parse(part.slice(6));
+            console.log("[Mock Stream] Processing event:", data.type);
+
+            switch (data.type) {
+              case "init":
+                setMessages((prev) => [
+                  ...prev.filter((msg) => msg._id !== tempId),
+                  data.userMessage,
+                  { ...data.botMessage, textContent: "", isThinking: true },
+                ]);
+                botMessageId = data.botMessage._id;
+                break;
+
+              case "chunk":
+                if (botMessageId) {
+                  setMessages((prev) =>
+                    prev.map((msg) =>
+                      msg._id === botMessageId
+                        ? {
+                            ...msg,
+                            textContent: msg.textContent + data.content,
+                            isThinking: false,
+                          }
+                        : msg
+                    )
+                  );
+                }
+                break;
+
+              case "complete":
+                if (botMessageId) {
+                  setMessages((prev) =>
+                    prev.map((msg) =>
+                      msg._id === botMessageId
+                        ? { ...data.botMessage, isTemporary: false }
+                        : msg
+                    )
+                  );
+                }
+                setIsBotThinking(false);
+                break;
+
+              case "error":
+                setMessages((prev) =>
+                  prev.filter(
+                    (msg) => msg._id !== tempId && msg._id !== botMessageId
+                  )
+                );
+                alert(`Error: ${data.message}`);
+                setIsBotThinking(false);
+                break;
+            }
+          } catch (error) {
+            console.error("[Mock Stream] Error processing event:", error);
+          }
+        }
+      }
+
+      // const decoder = new TextDecoder();
+      // let buffer = "";
+
+      // console.log("Starting to read stream...");
+
+      // while (true) {
+      //   const { done, value } = await reader.read();
+      //   if (done) {
+      //     console.log("Stream finished.");
+      //     break;
+      //   }
+
+      //   const chunk = decoder.decode(value, { stream: true });
+      //   buffer += chunk;
+      //   console.log("Received chunk:", chunk);
+      // }
+
+      // console.log("Final response:", buffer);
+    } else {
+      // Non-streaming handling
+      console.log(
+        "[Message Sender] AI does not support streaming. Sending standard request..."
+      );
+      const response = await axios.post(
+        `${BACKEND_URL}/api/messages`,
+        formData,
+        {
+          withCredentials: true,
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+
+      console.log(
+        "[Message Sender] Non-streaming response received:",
+        response.data
+      );
+
+      const { userMessage, botMessage } = response.data;
+      console.log("[Message Sender] Updating messages with bot response...");
+
+      setMessages((prev) => [
+        ...prev.filter((msg) => msg._id !== tempId),
+        userMessage,
+        botMessage,
+      ]);
+      setIsBotThinking(false);
+    }
+  };
+
+  const handleSendMessage1 = async () => {
     if (!selectedAIContact || !user) {
       console.warn(
         "[Message Sender] No selected AI contact or user. Exiting function."
@@ -150,18 +363,8 @@ const NewChatPage = () => {
       });
 
       if (selectedAIContact.streamingEnabled) {
-        // console.log(
-        //   "[Message Sender] AI supports streaming responses. Starting streaming..."
-        // );
-        // const response = await fetch(`${BACKEND_URL}/api/messages`, {
-        //   method: "POST",
-        //   body: formData,
-        //   credentials: "include",
-        // });
+        console.log("Streaming is enables");
 
-        // const reader = response.body.getReader();
-        // let buffer = "";
-        // let botMessageId = null;
         console.log("[Message Sender] Starting mock streaming...");
 
         // Mock stream implementation
@@ -227,94 +430,6 @@ const NewChatPage = () => {
         let buffer = "";
         let botMessageId = null;
 
-        // while (true) {
-        //   const { done, value } = await reader.read();
-        //   if (done) break;
-
-        //   buffer += new TextDecoder().decode(value);
-        //   const parts = buffer.split("\n\n");
-        //   buffer = parts.pop() || "";
-
-        //   for (const part of parts) {
-        //     if (!part.startsWith("data: ")) continue;
-
-        //     try {
-        //       const data = JSON.parse(part.slice(6));
-        //       console.log("[Message Sender] Streamed data received:", data);
-
-        //       switch (data.type) {
-        //         case "init":
-        //           console.log(
-        //             "[Message Sender] Bot message initialized:",
-        //             data.botMessage
-        //           );
-        //           setMessages((prev) => [
-        //             ...prev.filter((msg) => msg._id !== tempId),
-        //             data.userMessage,
-        //             { ...data.botMessage, isThinking: true },
-        //           ]);
-        //           botMessageId = data.botMessage._id;
-        //           break;
-
-        //         case "chunk":
-        //           console.log(
-        //             "[Message Sender] Streaming bot response chunk:",
-        //             data.content
-        //           );
-        //           if (botMessageId) {
-        //             setMessages((prev) =>
-        //               prev.map((msg) =>
-        //                 msg._id === botMessageId
-        //                   ? {
-        //                       ...msg,
-        //                       textContent: msg.textContent + data.content,
-        //                       isThinking: false,
-        //                     }
-        //                   : msg
-        //               )
-        //             );
-        //           }
-        //           break;
-
-        //         case "complete":
-        //           console.log(
-        //             "[Message Sender] Bot response complete:",
-        //             data.botMessage
-        //           );
-        //           if (botMessageId) {
-        //             setMessages((prev) =>
-        //               prev.map((msg) =>
-        //                 msg._id === botMessageId
-        //                   ? {
-        //                       ...data.botMessage,
-        //                       isTemporary: false,
-        //                     }
-        //                   : msg
-        //               )
-        //             );
-        //           }
-        //           break;
-
-        //         case "error":
-        //           console.error(
-        //             "[Message Sender] Error received from stream:",
-        //             data.message
-        //           );
-        //           setMessages((prev) =>
-        //             prev.filter(
-        //               (msg) =>
-        //                 msg._id !== tempId &&
-        //                 (!botMessageId || msg._id !== botMessageId)
-        //             )
-        //           );
-        //           alert(`Error: ${data.message}`);
-        //           break;
-        //       }
-        //     } catch (error) {
-        //       console.error("[Message Sender] Error processing stream:", error);
-        //     }
-        //   }
-        // }
         // Existing stream processing logic
         while (true) {
           const { done, value } = await reader.read();

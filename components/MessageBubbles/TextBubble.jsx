@@ -3,6 +3,7 @@ import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 
 const TextBubble = ({ sender, message, userAvatar, botAvatar }) => {
+  if (!message?.trim()) return null;
   const BACKEND_URL =
     process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
   return (
