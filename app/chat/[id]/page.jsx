@@ -187,6 +187,7 @@ const NewChatPage = () => {
                   { ...data.botMessage, textContent: "", isThinking: true },
                 ]);
                 botMessageId = data.botMessage._id;
+                setIsBotThinking(false);
                 break;
 
               case "chunk":
