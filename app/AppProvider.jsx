@@ -25,6 +25,14 @@ export function AppProvider({ children }) {
   const [activeTab, setActiveTab] = useState("chats");
   const [loading, setLoading] = useState(true);
 
+  //for settings
+  const [theme, setTheme] = useState("light");
+  const [fontSize, setFontSize] = useState("medium");
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [notificationSound, setNotificationSound] = useState("default");
+  const [profileVisibility, setProfileVisibility] = useState("public");
+  const [dataSharing, setDataSharing] = useState(true);
+
   useEffect(() => {
     console.log("[Data Updater] Initializing Firebase auth state listener...");
 
@@ -314,6 +322,18 @@ export function AppProvider({ children }) {
         user,
         login,
         logout: handleLogout,
+        theme,
+        setTheme,
+        fontSize,
+        setFontSize,
+        notificationsEnabled,
+        setNotificationsEnabled,
+        notificationSound,
+        setNotificationSound,
+        profileVisibility,
+        setProfileVisibility,
+        dataSharing,
+        setDataSharing,
       }}
     >
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>

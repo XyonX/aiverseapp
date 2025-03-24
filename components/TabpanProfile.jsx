@@ -1,440 +1,220 @@
-import React from "react";
+"use client";
+import React, { useState, useEffect, useRef } from "react";
+import { useAppContext } from "@/app/AppProvider";
+import { auth } from "@/app/firebase/config";
 
 const TabpanProfile = () => {
+  const BACKEND_URL =
+    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
+  const { user } = useAppContext();
+
+  // Local state for editable fields
+  const [username, setUsername] = useState(user.username);
+  const [description, setDescription] = useState(user.description || "");
+  const [preferences, setPreferences] = useState(user.preferences || []);
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}${user.avatar}`
+  );
+  const fileInputRef = useRef(null);
+
+  // Predefined list of available preferences (can be fetched from backend later)
+  const availablePreferences = [
+    "Artificial Intelligence",
+    "Blockchain",
+    "Cybersecurity",
+    "Game Development",
+    "Metaverse",
+    "Quantum Computing",
+    "Web Development",
+    "Mobile Development",
+    "Data Science",
+    "Machine Learning",
+  ];
+
+  // Sync state with user data if it changes
+  useEffect(() => {
+    setUsername(user.username);
+    setDescription(user.description || "");
+    setPreferences(user.preferences || []);
+    setAvatarPreview(`${process.env.NEXT_PUBLIC_BACKEND_URL}${user.avatar}`);
+  }, [user]);
+
+  // Handle avatar file selection and preview
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setAvatarFile(file);
+      setAvatarPreview(URL.createObjectURL(file));
+    }
+  };
+
+  // Handle save action (to be connected to backend later)
+  const handleSave = async () => {
+    try {
+      // Get current Firebase user directly
+      const firebaseUser = auth.currentUser;
+
+      if (!firebaseUser) {
+        console.error("No authenticated user");
+        return;
+      }
+
+      // Get fresh ID token
+      const idToken = await firebaseUser.getIdToken();
+      console.log(`Updating profile for UID: ${firebaseUser.uid}`);
+
+      const formData = new FormData();
+      formData.append("username", username);
+      formData.append("description", description);
+      formData.append("preferences", JSON.stringify(preferences));
+      if (avatarFile) {
+        formData.append("avatar", avatarFile);
+      }
+
+      const response = await fetch(`${BACKEND_URL}/api/auth/updateprofile`, {
+        method: "PATCH",
+        headers: {
+          // Include Authorization header with Firebase ID token
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: formData,
+      });
+
+      if (response.ok) {
+        console.log("Profile updated successfully");
+        // Optional: Refresh auth state if needed
+        await firebaseUser.getIdToken(true); // Force token refresh
+      } else {
+        console.error("Failed to update profile", await response.json());
+      }
+    } catch (error) {
+      console.error("Error updating profile:", error);
+    }
+  };
+
   return (
-    <div>
-      <div class="px-6 pt-6">
-        <div class="ltr:float-right rtl:float-left">
-          <div class="relative flex-shrink-0 dropdown">
-            <button
-              class="p-0 text-gray-400 border-0 btn dropdown-toggle dark:text-gray-300"
-              data-bs-toggle="dropdown"
-              id="dropdownMenuButtonA"
-            >
-              <i class="text-lg ri-more-2-fill"></i>
-            </button>
-            <ul
-              class="hidden absolute z-50 block w-40 py-2 text-left list-none bg-white border border-transparent rounded shadow-lg rtl:right-auto rtl:left-0 ltr:left-auto ltr:right-0 my-7 dropdown-menu bg-clip-padding dark:bg-zinc-700 dark:shadow-sm dark:border-zinc-600"
-              aria-labelledby="dropdownMenuButtonA"
-            >
-              <li>
-                <a
-                  class="block w-full px-4 py-2 text-sm font-normal text-gray-700 bg-transparent dropdown-item whitespace-nowrap hover:bg-gray-100/50 dark:text-gray-100 dark:hover:bg-zinc-600 ltr:text-left rtl:text-right"
-                  href="#"
-                >
-                  Action
-                </a>
-              </li>
-              <li>
-                <a
-                  class="block w-full px-4 py-2 text-sm font-normal text-gray-700 bg-transparent dropdown-item whitespace-nowrap hover:bg-gray-100/50 dark:text-gray-100 dark:hover:bg-zinc-600 ltr:text-left rtl:text-right"
-                  href="#"
-                >
-                  Another action
-                </a>
-              </li>
-              <li class="my-2 border-b border-gray-100/20 dark:border-zinc-600"></li>
-              <li>
-                <a
-                  class="block w-full px-4 py-2 text-sm font-normal text-gray-700 bg-transparent dropdown-item whitespace-nowrap hover:bg-gray-100/50 dark:text-gray-100 dark:hover:bg-zinc-600 ltr:text-left rtl:text-right"
-                  href="#"
-                >
-                  Delete
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
-        <h4 class="mb-0 text-gray-700 dark:text-gray-50">My Profile</h4>
+    <div className="w-full md:w-80 lg:w-96 h-screen border-r border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 overflow-y-auto flex flex-col">
+      {/* Header */}
+      <div className="p-4 border-b border-gray-200 dark:border-neutral-700">
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+          My Profile
+        </h2>
       </div>
 
-      <div class="p-6 text-center border-b border-gray-100 dark:border-zinc-600">
-        <div class="mb-4">
+      {/* Avatar Section */}
+      <div className="p-4 flex flex-col items-center border-b border-gray-200 dark:border-neutral-700">
+        <div className="relative">
           <img
-            src="assets/images/users/avatar-1.jpg"
-            class="w-24 h-24 p-1 mx-auto border border-gray-100 rounded-full dark:border-zinc-800"
-            alt=""
-          ></img>
+            src={avatarPreview}
+            alt="User Avatar"
+            className="w-16 h-16 rounded-full object-cover"
+          />
+          <button
+            onClick={() => fileInputRef.current.click()}
+            className="absolute bottom-0 right-0 bg-blue-600 text-white p-1 rounded-full hover:bg-blue-700 transition-colors"
+          >
+            <i className="ri-pencil-line"></i>
+          </button>
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleAvatarChange}
+            accept="image/*"
+            className="hidden"
+          />
+        </div>
+        <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+          {user.email}
+        </p>
+      </div>
+
+      {/* Profile Details */}
+      <div className="flex-1 p-4 space-y-4">
+        {/* Username */}
+        <div>
+          <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            Username
+          </label>
+          <input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="w-full mt-1 py-2 px-4 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-neutral-700 dark:border-neutral-600 dark:text-gray-200"
+          />
         </div>
 
-        <h5 class="mb-1 text-16 dark:text-gray-50">Patricia Smith</h5>
-
-        <h5 class="mb-0 truncate text-14 ltr:block rtl:hidden">
-          <a href="#" class="text-gray-500 dark:text-gray-50">
-            <i class="text-green-500 ltr:ml-1 rtl:mr-1 ri-record-circle-fill text-10 "></i>{" "}
-            Active
-          </a>
-        </h5>
-        <h5 class="mb-0 truncate text-14 ltr:hidden rtl:block">
-          <a href="#" class="text-gray-500 dark:text-gray-50">
-            Active{" "}
-            <i class="text-green-500 ltr:ml-1 rtl:mr-1 ri-record-circle-fill text-10 "></i>
-          </a>
-        </h5>
-      </div>
-      {/* <!-- End profile user --> */}
-
-      {/* <!-- Start user-profile-desc --> */}
-      <div class="p-6 h-[550px]" data-simplebar>
+        {/* Email (Non-editable) */}
         <div>
-          <p class="mb-6 text-gray-500 dark:text-gray-300">
-            If several languages coalesce, the grammar of the resulting language
-            is more simple and regular than that of the individual.
+          <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            Email
+          </label>
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+            {user.email}
           </p>
         </div>
 
-        <div data-tw-accordion="collapse">
-          <div class="text-gray-700 accordion-item">
-            <h2>
-              <button
-                type="button"
-                class="flex items-center justify-between w-full px-3 py-2 font-medium text-left border border-gray-100 rounded-t accordion-header group active dark:border-b-zinc-600 dark:bg-zinc-600 dark:border-zinc-600"
-              >
-                <span class="m-0 text-[14px] dark:text-gray-50 font-semibold ltr:block rtl:hidden">
-                  <i class="mr-2 align-middle ri-user-2-line d-inline-block"></i>{" "}
-                  About
+        {/* Joined Date */}
+        <div>
+          <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            Joined
+          </label>
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+            {new Date(user.createdAt).toLocaleDateString()}
+          </p>
+        </div>
+
+        {/* Description */}
+        <div>
+          <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            About Me (Bot Context)
+          </label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="w-full mt-1 py-2 px-4 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-neutral-700 dark:border-neutral-600 dark:text-gray-200"
+            rows="4"
+            placeholder="Describe yourself (this will help bots reply better)"
+          />
+        </div>
+
+        {/* Preferences */}
+        <div>
+          <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            Preferences
+          </label>
+          <div className="mt-2 space-y-2">
+            {availablePreferences.map((pref) => (
+              <label key={pref} className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={preferences.includes(pref)}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setPreferences([...preferences, pref]);
+                    } else {
+                      setPreferences(preferences.filter((p) => p !== pref));
+                    }
+                  }}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <span className="ml-2 text-sm text-gray-600 dark:text-gray-300">
+                  {pref}
                 </span>
-                <span class="m-0 text-[14px] dark:text-gray-50 font-semibold ltr:hidden rtl:block">
-                  About{" "}
-                  <i class="ml-2 align-middle ri-user-2-line d-inline-block"></i>
-                </span>
-                <i class="mdi mdi-chevron-down text-lg group-[.active]:rotate-180 dark:text-gray-50"></i>
-              </button>
-            </h2>
-
-            <div class="block bg-white border border-t-0 border-gray-100 accordion-body dark:bg-transparent dark:border-zinc-600">
-              <div class="p-5">
-                <div>
-                  <p class="mb-1 text-gray-500 dark:text-gray-300">Name</p>
-                  <h5 class="text-sm dark:text-gray-50">Patricia Smith</h5>
-                </div>
-                <div class="mt-5">
-                  <p class="mb-1 text-gray-500 dark:text-gray-300">Email</p>
-                  <h5 class="text-sm dark:text-gray-50">adc@123.com</h5>
-                </div>
-                <div class="mt-5">
-                  <p class="mb-1 text-gray-500 dark:text-gray-300">Time</p>
-                  <h5 class="text-sm dark:text-gray-50">11:40 AM</h5>
-                </div>
-                <div class="mt-5">
-                  <p class="mb-1 text-gray-500 dark:text-gray-300">Location</p>
-                  <h5 class="text-sm dark:text-gray-50">California, USA</h5>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="mt-2 text-gray-700 accordion-item">
-            <h2>
-              <button
-                type="button"
-                class="flex items-center justify-between w-full px-3 py-2 font-medium text-left border border-gray-100 rounded accordion-header group dark:border-b-zinc-600 dark:bg-zinc-600 dark:border-zinc-600"
-              >
-                <span class="m-0 text-[14px] dark:text-gray-50 font-semibold ltr:block rtl:hidden">
-                  <i class="mr-2 align-middle ri-attachment-line d-inline-block"></i>{" "}
-                  Attached Files
-                </span>
-                <span class="m-0 text-[14px] dark:text-gray-50 font-semibold ltr:hidden rtl:block">
-                  Attached Files{" "}
-                  <i class="ml-2 align-middle ri-attachment-line d-inline-block"></i>
-                </span>
-                <i class="mdi mdi-chevron-down text-lg group-[.active]:rotate-180 dark:text-gray-50"></i>
-              </button>
-            </h2>
-            <div class="hidden bg-white border border-t-0 border-gray-100 accordion-body dark:bg-transparent dark:border-zinc-600">
-              <div class="p-5">
-                <div class="p-2 mb-2 border rounded border-gray-100/80 dark:bg-zinc-800 dark:border-transparent">
-                  <div class="flex items-center">
-                    <div class="flex items-center justify-center w-10 h-10 rounded ltr:mr-3 group-data-[theme-color=violet]:bg-violet-500/20 group-data-[theme-color=green]:bg-green-500/20 group-data-[theme-color=red]:bg-red-500/20 rtl:ml-3">
-                      <div class="text-xl rounded-lg group-data-[theme-color=violet]:text-violet-500 group-data-[theme-color=green]:text-green-500 group-data-[theme-color=red]:text-red-500 avatar-title ">
-                        <i class="ri-file-text-fill"></i>
-                      </div>
-                    </div>
-                    <div class="flex-grow">
-                      <div class="text-start">
-                        <h5 class="mb-1 text-sm dark:text-gray-50">
-                          Admin-A.zip
-                        </h5>
-                        <p class="mb-0 text-gray-500 text-13 dark:text-gray-300">
-                          12.5 MB
-                        </p>
-                      </div>
-                    </div>
-
-                    <div class="ltr:ml-4 rtl:mr-4">
-                      <ul class="flex items-center gap-3 mb-0 text-lg">
-                        <li>
-                          <a
-                            href="#"
-                            class="px-1 text-gray-500 dark:text-gray-300"
-                          >
-                            <i class="ri-download-2-line"></i>
-                          </a>
-                        </li>
-                        <li class="relative flex-shrink-0 dropstart">
-                          <a
-                            href="#!"
-                            class="p-0 text-gray-400 border-0 btn dropdown-toggle dark:text-gray-300"
-                            data-bs-toggle="dropdown"
-                            id="dropdownMenuButton23"
-                          >
-                            <i class="text-lg ri-more-fill"></i>
-                          </a>
-                          <ul
-                            class="absolute z-50 block w-40 py-2 text-left list-none bg-white border border-transparent rounded shadow-lg rtl:left-0 rtl:right-auto ltr:right-0 ltr:left-auto my-7 dropdown-menu bg-clip-padding dark:bg-zinc-700 dark:shadow-sm dark:border-zinc-600"
-                            aria-labelledby="dropdownMenuButton23"
-                          >
-                            <li>
-                              <a
-                                class="block w-full px-4 py-2 text-sm font-normal text-gray-700 bg-transparent dropdown-item whitespace-nowrap hover:bg-gray-100/50 dark:text-gray-100 dark:hover:bg-zinc-600 ltr:text-left rtl:text-right"
-                                href="#"
-                              >
-                                Action
-                              </a>
-                            </li>
-                            <li>
-                              <a
-                                class="block w-full px-4 py-2 text-sm font-normal text-gray-700 bg-transparent dropdown-item whitespace-nowrap hover:bg-gray-100/50 dark:text-gray-100 dark:hover:bg-zinc-600 ltr:text-left rtl:text-right"
-                                href="#"
-                              >
-                                Another action
-                              </a>
-                            </li>
-                            <li class="my-2 border-b border-gray-100/20 dark:border-zinc-600"></li>
-                            <li>
-                              <a
-                                class="block w-full px-4 py-2 text-sm font-normal text-gray-700 bg-transparent dropdown-item whitespace-nowrap hover:bg-gray-100/50 dark:text-gray-100 dark:hover:bg-zinc-600 ltr:text-left rtl:text-right"
-                                href="#"
-                              >
-                                Delete
-                              </a>
-                            </li>
-                          </ul>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-                <div class="p-2 mb-2 border rounded border-gray-100/80 dark:bg-zinc-800 dark:border-transparent">
-                  <div class="flex items-center">
-                    <div class="flex items-center justify-center w-10 h-10 rounded ltr:mr-3 group-data-[theme-color=violet]:bg-violet-500/20 group-data-[theme-color=green]:bg-green-500/20 group-data-[theme-color=red]:bg-red-500/20 rtl:ml-3">
-                      <div class="text-xl rounded-lg group-data-[theme-color=violet]:text-violet-500 group-data-[theme-color=green]:text-green-500 group-data-[theme-color=red]:text-red-500 avatar-title ">
-                        <i class="ri-file-text-fill"></i>
-                      </div>
-                    </div>
-                    <div class="flex-grow">
-                      <div class="text-start">
-                        <h5 class="mb-1 text-sm dark:text-gray-50">
-                          Image-1.jpg
-                        </h5>
-                        <p class="mb-0 text-gray-500 text-13 dark:text-gray-300">
-                          4.2 MB
-                        </p>
-                      </div>
-                    </div>
-
-                    <div class="ltr:ml-4 rtl:mr-4">
-                      <ul class="flex items-center gap-3 mb-0 text-lg">
-                        <li>
-                          <a
-                            href="#"
-                            class="px-1 text-gray-500 dark:text-gray-300"
-                          >
-                            <i class="ri-download-2-line"></i>
-                          </a>
-                        </li>
-                        <li class="relative flex-shrink-0 dropstart">
-                          <a
-                            href="#!"
-                            class="p-0 text-gray-400 border-0 btn dropdown-toggle dark:text-gray-300"
-                            data-bs-toggle="dropdown"
-                            id="dropdownMenuButton2"
-                          >
-                            <i class="text-lg ri-more-fill"></i>
-                          </a>
-                          <ul
-                            class="absolute z-50 block w-40 py-2 text-left list-none bg-white border border-transparent rounded shadow-lg rtl:left-0 rtl:right-auto ltr:right-0 ltr:left-auto my-7 dropdown-menu bg-clip-padding dark:bg-zinc-700 dark:shadow-sm dark:border-zinc-600"
-                            aria-labelledby="dropdownMenuButton2"
-                          >
-                            <li>
-                              <a
-                                class="block w-full px-4 py-2 text-sm font-normal text-gray-700 bg-transparent dropdown-item whitespace-nowrap hover:bg-gray-100/50 dark:text-gray-100 dark:hover:bg-zinc-600 ltr:text-left rtl:text-right"
-                                href="#"
-                              >
-                                Action
-                              </a>
-                            </li>
-                            <li>
-                              <a
-                                class="block w-full px-4 py-2 text-sm font-normal text-gray-700 bg-transparent dropdown-item whitespace-nowrap hover:bg-gray-100/50 dark:text-gray-100 dark:hover:bg-zinc-600 ltr:text-left rtl:text-right"
-                                href="#"
-                              >
-                                Another action
-                              </a>
-                            </li>
-                            <li class="my-2 border-b border-gray-100/20 dark:border-zinc-600"></li>
-                            <li>
-                              <a
-                                class="block w-full px-4 py-2 text-sm font-normal text-gray-700 bg-transparent dropdown-item whitespace-nowrap hover:bg-gray-100/50 dark:text-gray-100 dark:hover:bg-zinc-600 ltr:text-left rtl:text-right"
-                                href="#"
-                              >
-                                Delete
-                              </a>
-                            </li>
-                          </ul>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-                <div class="p-2 mb-2 border rounded border-gray-100/80 dark:bg-zinc-800 dark:border-transparent">
-                  <div class="flex items-center">
-                    <div class="flex items-center justify-center w-10 h-10 rounded ltr:mr-3 group-data-[theme-color=violet]:bg-violet-500/20 group-data-[theme-color=green]:bg-green-500/20 group-data-[theme-color=red]:bg-red-500/20 rtl:ml-3">
-                      <div class="text-xl rounded-lg group-data-[theme-color=violet]:text-violet-500 group-data-[theme-color=green]:text-green-500 group-data-[theme-color=red]:text-red-500 avatar-title ">
-                        <i class="ri-file-text-fill"></i>
-                      </div>
-                    </div>
-                    <div class="flex-grow">
-                      <div class="text-start">
-                        <h5 class="mb-1 text-sm dark:text-gray-50">
-                          Image-2.jpg
-                        </h5>
-                        <p class="mb-0 text-gray-500 text-13 dark:text-gray-300">
-                          3.1 MB
-                        </p>
-                      </div>
-                    </div>
-
-                    <div class="ltr:ml-4 rtl:mr-4">
-                      <ul class="flex items-center gap-3 mb-0 text-lg">
-                        <li>
-                          <a
-                            href="#"
-                            class="px-1 text-gray-500 dark:text-gray-300"
-                          >
-                            <i class="ri-download-2-line"></i>
-                          </a>
-                        </li>
-                        <li class="relative flex-shrink-0 dropstart">
-                          <a
-                            href="#!"
-                            class="p-0 text-gray-400 border-0 btn dropdown-toggle dark:text-gray-300"
-                            data-bs-toggle="dropdown"
-                            id="dropdownMenuButton3"
-                          >
-                            <i class="text-lg ri-more-fill"></i>
-                          </a>
-                          <ul
-                            class="absolute z-50 block w-40 py-2 text-left list-none bg-white border border-transparent rounded shadow-lg rtl:left-0 rtl:right-auto ltr:right-0 ltr:left-auto my-7 dropdown-menu bg-clip-padding dark:bg-zinc-700 dark:shadow-sm dark:border-zinc-600"
-                            aria-labelledby="dropdownMenuButton3"
-                          >
-                            <li>
-                              <a
-                                class="block w-full px-4 py-2 text-sm font-normal text-gray-700 bg-transparent dropdown-item whitespace-nowrap hover:bg-gray-100/50 dark:text-gray-100 dark:hover:bg-zinc-600 ltr:text-left rtl:text-right"
-                                href="#"
-                              >
-                                Action
-                              </a>
-                            </li>
-                            <li>
-                              <a
-                                class="block w-full px-4 py-2 text-sm font-normal text-gray-700 bg-transparent dropdown-item whitespace-nowrap hover:bg-gray-100/50 dark:text-gray-100 dark:hover:bg-zinc-600 ltr:text-left rtl:text-right"
-                                href="#"
-                              >
-                                Another action
-                              </a>
-                            </li>
-                            <li class="my-2 border-b border-gray-100/20 dark:border-zinc-600"></li>
-                            <li>
-                              <a
-                                class="block w-full px-4 py-2 text-sm font-normal text-gray-700 bg-transparent dropdown-item whitespace-nowrap hover:bg-gray-100/50 dark:text-gray-100 dark:hover:bg-zinc-600 ltr:text-left rtl:text-right"
-                                href="#"
-                              >
-                                Delete
-                              </a>
-                            </li>
-                          </ul>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-                <div class="p-2 mb-2 border rounded border-gray-100/80 dark:bg-zinc-800 dark:border-transparent">
-                  <div class="flex items-center">
-                    <div class="flex items-center justify-center w-10 h-10 rounded ltr:mr-3 group-data-[theme-color=violet]:bg-violet-500/20 group-data-[theme-color=green]:bg-green-500/20 group-data-[theme-color=red]:bg-red-500/20 rtl:ml-3">
-                      <div class="text-xl rounded-lg group-data-[theme-color=violet]:text-violet-500 group-data-[theme-color=green]:text-green-500 group-data-[theme-color=red]:text-red-500 avatar-title ">
-                        <i class="ri-file-text-fill"></i>
-                      </div>
-                    </div>
-                    <div class="flex-grow">
-                      <div class="text-start">
-                        <h5 class="mb-1 text-sm dark:text-gray-50">
-                          Landing-A.zip
-                        </h5>
-                        <p class="mb-0 text-gray-500 text-13 dark:text-gray-300">
-                          6.7 MB
-                        </p>
-                      </div>
-                    </div>
-
-                    <div class="ltr:ml-4 rtl:mr-4">
-                      <ul class="flex items-center gap-3 mb-0 text-lg">
-                        <li>
-                          <a
-                            href="#"
-                            class="px-1 text-gray-500 dark:text-gray-300"
-                          >
-                            <i class="ri-download-2-line"></i>
-                          </a>
-                        </li>
-                        <li class="relative flex-shrink-0 dropstart">
-                          <a
-                            href="#!"
-                            class="p-0 text-gray-400 border-0 btn dropdown-toggle dark:text-gray-300"
-                            data-bs-toggle="dropdown"
-                            id="dropdownMenuButton4"
-                          >
-                            <i class="text-lg ri-more-fill"></i>
-                          </a>
-                          <ul
-                            class="absolute z-50 block w-40 py-2 text-left list-none bg-white border border-transparent rounded shadow-lg rtl:left-0 rtl:right-auto ltr:right-0 ltr:left-auto my-7 dropdown-menu bg-clip-padding dark:bg-zinc-700 dark:shadow-sm dark:border-zinc-600"
-                            aria-labelledby="dropdownMenuButton4"
-                          >
-                            <li>
-                              <a
-                                class="block w-full px-4 py-2 text-sm font-normal text-gray-700 bg-transparent dropdown-item whitespace-nowrap hover:bg-gray-100/50 dark:text-gray-100 dark:hover:bg-zinc-600 ltr:text-left rtl:text-right"
-                                href="#"
-                              >
-                                Action
-                              </a>
-                            </li>
-                            <li>
-                              <a
-                                class="block w-full px-4 py-2 text-sm font-normal text-gray-700 bg-transparent dropdown-item whitespace-nowrap hover:bg-gray-100/50 dark:text-gray-100 dark:hover:bg-zinc-600 ltr:text-left rtl:text-right"
-                                href="#"
-                              >
-                                Another action
-                              </a>
-                            </li>
-                            <li class="my-2 border-b border-gray-100/20 dark:border-zinc-600"></li>
-                            <li>
-                              <a
-                                class="block w-full px-4 py-2 text-sm font-normal text-gray-700 bg-transparent dropdown-item whitespace-nowrap hover:bg-gray-100/50 dark:text-gray-100 dark:hover:bg-zinc-600 ltr:text-left rtl:text-right"
-                                href="#"
-                              >
-                                Delete
-                              </a>
-                            </li>
-                          </ul>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+              </label>
+            ))}
           </div>
         </div>
+      </div>
+
+      {/* Save Button */}
+      <div className="p-4 border-t border-gray-200 dark:border-neutral-700">
+        <button
+          onClick={handleSave}
+          className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+        >
+          Save Changes
+        </button>
       </div>
     </div>
   );

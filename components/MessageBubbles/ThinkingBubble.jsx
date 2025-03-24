@@ -38,7 +38,7 @@ const ThinkingBubble = ({ sender, userAvatar, botAvatar }) => {
           </div>
           <div className="shrink-0">
             <Image
-              src={`${BACKEND_URL}/uploads/${userAvatar}`}
+              src={`${BACKEND_URL}${userAvatar}`}
               width={36}
               height={36}
               className="rounded-full"

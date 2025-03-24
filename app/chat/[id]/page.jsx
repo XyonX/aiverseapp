@@ -553,6 +553,8 @@ const NewChatPage = () => {
       </div>
     );
   }
+  console.log("user avatar");
+  console.log(user.avatar);
 
   return (
     <main id="content" className="flex-1 overflow-hidden flex flex-col h-full">
