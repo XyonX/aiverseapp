@@ -6,6 +6,10 @@ const TextBubble = ({ sender, message, userAvatar, botAvatar }) => {
   if (!message?.trim()) return null;
   const BACKEND_URL =
     process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
+  console.log("Got the images from text bubble");
+  console.log(userAvatar, botAvatar);
+  console.log(`bot url: ${BACKEND_URL}/uploads/${botAvatar}`);
+  console.log(`ser url: ${BACKEND_URL}/${userAvatar} `);
   return (
     <>
       {sender === "bot" ? (
@@ -35,7 +39,7 @@ const TextBubble = ({ sender, message, userAvatar, botAvatar }) => {
           </div>
           <div className="shrink-0">
             <Image
-              src={`${BACKEND_URL}/${userAvatar}`}
+              src={`${BACKEND_URL}${userAvatar}`}
               width={36}
               height={36}
               className="rounded-full"

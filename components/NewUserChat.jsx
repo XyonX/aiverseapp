@@ -146,14 +146,14 @@ const NewUserChat = () => {
             <TextBubble
               message={"HI"}
               sender={"user"}
-              userAvatar={"default-avatar.png"}
-              botAvatar={"default-bot.png"}
+              userAvatar={"/default-avatar.png"}
+              botAvatar={"/default-bot.png"}
             />
             <TextBubble
               message={"HI THIS IS A DEMO MESSAGE"}
               sender={"bot"}
-              userAvatar={"default-avatar.png"}
-              botAvatar={"default-bot.png"}
+              userAvatar={"/default-avatar.png"}
+              botAvatar={"/default-bot.png"}
             />
           </ul>
         </div>
