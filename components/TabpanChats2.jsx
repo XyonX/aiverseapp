@@ -154,10 +154,10 @@
 // export default TabPanchats2;
 "use client"; // This forces Next.js to treat it as a client component
 import React, { useEffect, useState } from "react";
-import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import { useAppContext } from "@/app/AppProvider";
 import { useRouter } from "next/navigation";
+import RecentChats from "./RecentChats";
 
 const TabPanchats2 = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -174,12 +174,34 @@ const TabPanchats2 = () => {
   // Filter and select the first 5 bots from aiContacts
   const onlineBots = aiContacts?.slice(0, 5) || [];
 
+  // Filter featured bots based on search query
+  const filteredFeaturedBots = searchQuery
+    ? onlineBots.filter((bot) =>
+        bot.name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : onlineBots;
+
+  // Filter recent chats based on bot name or last message
+  const filteredChats = searchQuery
+    ? recentChatContacts.filter((chat) => {
+        const bot = aiContacts.find((bot) => bot._id === chat.botId);
+        if (!bot) return false; // Skip if no matching bot found
+        const nameMatch = bot.name
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase());
+        const messageMatch = chat.lastMessage
+          ?.toLowerCase()
+          .includes(searchQuery.toLowerCase());
+        return nameMatch || messageMatch;
+      })
+    : recentChatContacts;
+
   useEffect(() => {
     console.log(aiContacts);
   }, [aiContacts]);
 
   const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
+    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
 
   return (
     <div className="w-full md:w-80 lg:w-96 h-screen border-r border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 overflow-hidden flex flex-col">
@@ -222,7 +244,7 @@ const TabPanchats2 = () => {
           Featured AI
         </h3>
         <div className="flex space-x-3 overflow-x-auto pb-2 scrollbar-hide">
-          {onlineBots.map((bot) => (
+          {filteredFeaturedBots.map((bot) => (
             <div
               key={bot.id}
               className="flex flex-col items-center min-w-[60px] cursor-pointer"
@@ -259,7 +281,7 @@ const TabPanchats2 = () => {
           Recent Chats
         </h3>
         <ul className="divide-y divide-gray-200 dark:divide-neutral-700">
-          {recentChatContacts.map((chat) => {
+          {filteredChats.map((chat) => {
             let bot = aiContacts.find((bot) => bot._id === chat.botId);
             return (
               <li
@@ -333,7 +355,7 @@ const TabPanchats2 = () => {
                         ) : (
                           chat.lastMessage
                         )} */}
-                        chat.lastMessage
+                        {chat.lastMessage}
                       </p>
                       {chat.unread > 0 && (
                         <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-blue-600 rounded-full">

@@ -153,12 +153,14 @@ export function AppProvider({ children }) {
         "[Conversation Fetcher] Raw Conversations Data:",
         JSON.stringify(response.data, null, 2)
       );
+      console.log("Conversatio data:", response.data);
 
       const formattedConversations = response.data.map((conv) => ({
         botId: conv.bot._id,
-        lastMessage: conv.messages.length
-          ? conv.messages[conv.messages.length - 1].content
-          : "No messages yet",
+        lastMessage:
+          conv.messages.length > 0
+            ? conv.messages[0].textContent
+            : "No messages yet",
         time: conv.lastMessageTimestamp,
         botName: conv.bot.name,
         botAvatar: conv.bot.avatar,
