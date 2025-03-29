@@ -157,7 +157,22 @@ import React, { useEffect, useState } from "react";
 import "swiper/css";
 import { useAppContext } from "@/app/AppProvider";
 import { useRouter } from "next/navigation";
-import RecentChats from "./RecentChats";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Search, Plus } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+  CommandShortcut,
+} from "@/components/ui/command";
 
 const TabPanchats2 = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -207,9 +222,7 @@ const TabPanchats2 = () => {
     <div className="w-full md:w-80 lg:w-96 h-screen border-r border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 overflow-hidden flex flex-col">
       {/* Header */}
       <div className="p-4 border-b border-gray-200 dark:border-neutral-700">
-        <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
-          Chats
-        </h2>
+        <h2 className="text-md font-semibold">Chats</h2>
 
         {/* Search */}
         <div className="mt-4 relative">
@@ -240,9 +253,7 @@ const TabPanchats2 = () => {
 
       {/* Featured Bots */}
       <div className="p-4 border-b border-gray-200 dark:border-neutral-700">
-        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
-          Featured AI
-        </h3>
+        <h3 className="text-sm font-medium">Featured AI</h3>
         <div className="flex space-x-3 overflow-x-auto pb-2 scrollbar-hide">
           {filteredFeaturedBots.map((bot) => (
             <div
