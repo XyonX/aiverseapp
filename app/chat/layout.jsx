@@ -178,7 +178,7 @@ export default function ChatLayout({ children }) {
       <BotProvider>
         <SidebarProvider
           style={{
-            "--sidebar-width": "350px",
+            "--sidebar-width": "450px",
           }}
         >
           <AppSidebar />
@@ -202,11 +202,11 @@ export default function ChatLayout({ children }) {
       <BotProvider>
         <SidebarProvider
           style={{
-            "--sidebar-width": "350px",
+            "--sidebar-width": "450px",
           }}
         >
           <AppSidebar />
-          {children}
+          <div className="w-full">{children}</div>
         </SidebarProvider>
       </BotProvider>
     );

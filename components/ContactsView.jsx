@@ -17,13 +17,21 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useBot } from "@/context/BotContext";
+import { useAppContext } from "@/app/AppProvider";
 
 export function ContactsView({ bots, onBotClick }) {
+  const BACKEND_URL =
+    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
+  const { aiContacts } = useAppContext();
   const [searchQuery, setSearchQuery] = React.useState("");
   const { selectedBot } = useBot();
 
   const filteredBots = bots.filter((bot) =>
     bot.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredContacts = aiContacts.filter((contact) =>
+    contact.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -46,7 +54,7 @@ export function ContactsView({ bots, onBotClick }) {
         <SidebarGroup className="px-0">
           <SidebarGroupContent>
             <div className="divide-y">
-              {filteredBots.map((bot) => (
+              {filteredContacts.map((bot) => (
                 <div
                   key={bot.id}
                   className={`flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-neutral-700 cursor-pointer ${
@@ -59,7 +67,10 @@ export function ContactsView({ bots, onBotClick }) {
                   <div className="flex items-center">
                     <div className="relative">
                       <img
-                        src={bot.avatar || "/placeholder.svg"}
+                        src={
+                          `${BACKEND_URL}/uploads/${bot.avatar}` ||
+                          "/placeholder.svg"
+                        }
                         alt={bot.name}
                         className="w-10 h-10 rounded-full object-cover"
                       />

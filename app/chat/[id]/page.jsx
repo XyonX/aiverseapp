@@ -1,19 +1,186 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import Image from "next/image";
+// import Image from "next/image";
 import { useAppContext } from "@/app/AppProvider";
 import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 import TextBubble from "@/components/MessageBubbles/TextBubble";
 import ImageBubble from "@/components/MessageBubbles/ImageBubble";
 import ThinkingBubble from "@/components/MessageBubbles/ThinkingBubble";
+import { ConversationView } from "@/components/ConversationView";
 
+import {
+  Send,
+  X,
+  Paperclip,
+  Copy,
+  RefreshCw,
+  MoreVertical,
+  StopCircle,
+  Mic,
+  Image,
+  Smile,
+  Bookmark,
+  Star,
+  Trash,
+  Download,
+  Share2,
+  Volume2,
+  Maximize2,
+  ArrowLeft,
+  MessageSquare,
+} from "lucide-react";
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MessageContainer } from "@/components/messages/MessageContainer";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
+// Sample emojis for the emoji picker
+const sampleEmojis = [
+  "😀",
+  "😃",
+  "😄",
+  "😁",
+  "😆",
+  "😅",
+  "😂",
+  "🤣",
+  "😊",
+  "😇",
+  "🙂",
+  "🙃",
+  "😉",
+  "😌",
+  "😍",
+  "🥰",
+  "😘",
+  "😗",
+  "😙",
+  "😚",
+  "😋",
+  "😛",
+  "😝",
+  "😜",
+  "🤪",
+  "🤨",
+  "🧐",
+  "🤓",
+  "😎",
+  "🤩",
+  "🥳",
+  "😏",
+  "😒",
+  "😞",
+  "😔",
+  "😟",
+  "😕",
+  "🙁",
+  "☹️",
+  "😣",
+  "😖",
+  "😫",
+  "😩",
+  "🥺",
+  "😢",
+  "😭",
+  "😤",
+  "😠",
+  "😡",
+  "🤬",
+  "🤯",
+  "😳",
+  "🥵",
+  "🥶",
+  "😱",
+  "😨",
+  "😰",
+  "😥",
+  "😓",
+  "🤗",
+  "🤔",
+  "🤭",
+  "🤫",
+  "🤥",
+  "😶",
+  "😐",
+  "😑",
+  "😬",
+  "🙄",
+  "😯",
+  "😦",
+  "😧",
+  "😮",
+  "😲",
+  "🥱",
+  "😴",
+  "🤤",
+  "😪",
+  "😵",
+  "🤐",
+  "🥴",
+  "🤢",
+  "🤮",
+  "🤧",
+  "😷",
+  "🤒",
+  "🤕",
+];
 const NewChatPage = () => {
+  //helper fucntion
+  const handleFileUpload = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setFiles(Array.from(e.target.files));
+    }
+  };
+
+  const toggleRecording = () => {
+    setIsRecording((prev) => !prev);
+  };
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      containerRef.current?.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  };
+  //01 getting data from context api
   const { aiContacts, selectedAIContact, setSelectedAIContact, user } =
     useAppContext();
+  //getting router to redirect
   const router = useRouter();
+  //getting id or hte chatbot endpoint to get requested bot from all aicontacts
   const { id } = useParams();
 
+  //02 state declaration
+  //varibale that will store data
   const [conversation, setConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
@@ -27,6 +194,16 @@ const NewChatPage = () => {
 
   const bottomRef = useRef(null);
 
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [files, setFiles] = useState([]);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const messagesEndRef = useRef(null);
+  const containerRef = useRef(null);
+
+  //effect to scroll to chatbottom
   useEffect(() => {
     // Scroll to the bottom of the chat container whenever messages update
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -36,7 +213,7 @@ const NewChatPage = () => {
     process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
   // Fallback for local dev
 
-  // Fetch conversation when bot is selected
+  // 02 Fetch conversation when bot is selected
   useEffect(() => {
     if (!id || !user) return;
 
@@ -51,8 +228,6 @@ const NewChatPage = () => {
 
   const fetchConversation = async (botId) => {
     try {
-      console.log(`${BACKEND_URL}/api/auth/login`);
-
       const response = await axios.get(
         `${BACKEND_URL}/api/conversations/user/${user._id}/bot/${botId}`,
         { withCredentials: true }
@@ -556,244 +731,257 @@ const NewChatPage = () => {
   console.log("user avatar");
   console.log(user.avatar);
 
+  // return <ConversationView bot={selectedAIContact} />;
   return (
-    <main id="content" className="flex-1 overflow-hidden flex flex-col h-full">
-      {/* Content */}
-      <div className="relative flex-1 overflow-y-auto">
-        <div className="max-w-4xl px-4 py-6 sm:px-6 lg:px-8 mx-auto">
-          {/* Title */}
-          <div className="text-center">
-            <div className="mb-4 flex justify-center items-center">
-              {/* Logo */}
-              <a
-                className="inline-flex items-center gap-2 rounded-md text-xl font-semibold focus:outline-hidden focus:opacity-80"
-                href="#"
-                aria-label="Preline"
-              >
-                <img
-                  src={`${BACKEND_URL}/uploads/aiverse.png`}
-                  alt="Aiverse Logo"
-                  className="h-[30px]"
-                />
-                <span>AIVERSE</span>
-              </a>
-              {/* End Logo */}
+    <div className="flex h-full flex-col overflow-hidden">
+      {/* Conversation header - Fixed at the top */}
+      <div className="flex items-center justify-between border-b p-4 sticky top-0 bg-background z-10 left-0 right-0">
+        <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden h-8 w-8 mr-1"
+            onClick={() => setSelectedAIContact(null)}
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <Avatar className="h-10 w-10">
+            <AvatarImage
+              src={`${BACKEND_URL}/uploads/${selectedAIContact.avatar}`}
+              alt={selectedAIContact.name}
+            />
+            <AvatarFallback>{selectedAIContact.name.charAt(0)}</AvatarFallback>
+          </Avatar>
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-medium">
+                {selectedAIContact.name}
+              </h2>
+              <Button variant="ghost" size="icon" className="h-6 w-6">
+                <Star className="h-3.5 w-3.5" />
+              </Button>
             </div>
-
-            <h1 className="text-3xl font-bold text-gray-800 sm:text-4xl dark:text-white">
-              Welcome to AIVERSE
-            </h1>
-            <p className="mt-3 text-gray-600 dark:text-neutral-400">
-              Your AI-powered copilot for the web
+            <p className="text-xs text-muted-foreground flex items-center">
+              <span
+                className={`mr-1.5 h-2 w-2 rounded-full ${
+                  selectedAIContact.isOnline ? "bg-green-500" : "bg-yellow-500"
+                }`}
+              ></span>
+              {/* {isTyping && bot.status === "online"
+                ? "Typing..."
+                : bot.status === "online"
+                ? "Online"
+                : "Offline"} */}
+              {selectedAIContact.isOnline ? "Online" : "Offline"}
             </p>
           </div>
-
-          {/* End Title */}
-          <ul className="mt-16 space-y-5">
-            {messages.length > 0 ? (
-              messages.map((msg, index) => {
-                if (msg.type === "text") {
-                  return (
-                    <TextBubble
-                      message={msg.textContent}
-                      sender={msg.sender}
-                      userAvatar={user.avatar}
-                      botAvatar={selectedAIContact.avatar}
-                    />
-                  );
-                } else if (msg.type === "image") {
-                  return (
-                    <ImageBubble
-                      message={msg}
-                      sender={msg.sender}
-                      userAvatar={user.avatar}
-                      botAvatar={selectedAIContact.avatar}
-                    />
-                  );
-                }
-              })
-            ) : (
-              <li className="text-center text-gray-500 dark:text-neutral-400">
-                No messages yet. Start the conversation!
-              </li>
-            )}
-            {isBotThinking && (
-              <ThinkingBubble
-                userAvatar={user.avatar}
-                botAvatar={selectedAIContact.avatar}
-                sender={"bot"}
-              />
-            )}
-          </ul>
         </div>
-        {/* Dummy element to trigger scroll */}
-        <div ref={bottomRef} />
+        <div className="flex items-center gap-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <MessageSquare className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>New Chat</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  // onClick={toggleFullscreen}
+                >
+                  <Maximize2 className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Fullscreen</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem>View profile</DropdownMenuItem>
+              <DropdownMenuItem>Clear conversation</DropdownMenuItem>
+              <DropdownMenuItem>Export chat</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>Bot settings</DropdownMenuItem>
+              <DropdownMenuItem>Mute notifications</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-destructive">
+                <Trash className="h-4 w-4 mr-2" />
+                Delete chat
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
-
-      <div className="sticky bottom-0 z-10 bg-white border-t border-gray-200 pt-2 pb-4 sm:pt-4 sm:pb-6 px-4 sm:px-6 lg:px-8 dark:bg-neutral-900 dark:border-neutral-700">
-        {/* Textarea */}
-        <div className="max-w-4xl mx-auto">
-          <div className="flex justify-between items-center mb-3">
-            <button
-              type="button"
-              className="inline-flex justify-center items-center gap-x-2 rounded-lg font-medium text-gray-800 hover:text-blue-600 focus:outline-hidden focus:text-blue-600 text-xs sm:text-sm dark:text-neutral-200 dark:hover:text-blue-500 dark:focus:text-blue-500"
-            >
-              <svg
-                className="shrink-0 size-4"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M5 12h14" />
-                <path d="M12 5v14" />
-              </svg>
-              New chat
-            </button>
-
-            <button
-              type="button"
-              className="py-1.5 px-2 inline-flex items-center gap-x-2 text-xs font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-2xs hover:bg-gray-50 focus:outline-hidden focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-800 dark:focus:bg-neutral-800"
-            >
-              <svg
-                className="size-3"
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                fill="currentColor"
-                viewBox="0 0 16 16"
-              >
-                <path d="M5 3.5h6A1.5 1.5 0 0 1 12.5 5v6a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 11V5A1.5 1.5 0 0 1 5 3.5z" />
-              </svg>
-              Stop generating
-            </button>
-          </div>
-
-          {/* Input */}
-          <div className="relative">
-            <textarea
-              className="p-3 sm:p-4 pb-12 sm:pb-12 block w-full border border-gray-200 rounded-lg sm:text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-              rows={3}
-              placeholder={
-                selectedFile ? "Add message..." : "Ask me anything..."
+      {/* Messages area - Scrollable */}
+      <ScrollArea className="h-[calc(100vh-180px)]">
+        <ul className="mt-16 space-y-5">
+          {messages.length > 0 ? (
+            messages.map((msg, index) => {
+              if (msg.type === "text") {
+                return (
+                  <TextBubble
+                    message={msg.textContent}
+                    sender={msg.sender}
+                    userAvatar={user.avatar}
+                    botAvatar={selectedAIContact.avatar}
+                  />
+                );
+              } else if (msg.type === "image") {
+                return (
+                  <ImageBubble
+                    message={msg}
+                    sender={msg.sender}
+                    userAvatar={user.avatar}
+                    botAvatar={selectedAIContact.avatar}
+                  />
+                );
               }
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-            ></textarea>
-
-            {/* Toolbar */}
-            <div className="absolute bottom-px inset-x-px p-2 rounded-b-lg bg-white dark:bg-neutral-900">
-              <div className="flex flex-wrap justify-between items-center gap-2">
-                {/* Button Group */}
-                <div className="flex items-center">
-                  {/* Mic Button */}
-                  <button
-                    type="button"
-                    className="inline-flex shrink-0 justify-center items-center size-8 rounded-lg text-gray-500 hover:bg-gray-100 focus:z-10 focus:outline-hidden focus:bg-gray-100 dark:text-neutral-500 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700"
-                  >
-                    <svg
-                      className="shrink-0 size-4"
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
+            })
+          ) : (
+            <li className="text-center text-gray-500 dark:text-neutral-400">
+              No messages yet. Start the conversation!
+            </li>
+          )}
+          {isBotThinking && (
+            <ThinkingBubble
+              userAvatar={user.avatar}
+              botAvatar={selectedAIContact.avatar}
+              sender={"bot"}
+            />
+          )}
+        </ul>
+      </ScrollArea>
+      {/* Fixed bottom section */}
+      <div className="border-t bg-background sticky bottom-0 z-10">
+        {/* Input area */}
+        <div className="p-4">
+          <div className="flex items-end gap-2">
+            <div className="relative flex-1">
+              <Textarea
+                placeholder="Type a message..."
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage();
+                  }
+                }}
+                className="min-h-[80px] resize-none pr-10 py-3 pl-3"
+                disabled={isRecording}
+              />
+              <div className="absolute bottom-2 right-2 flex items-center gap-1">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  className="hidden"
+                  multiple
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 rounded-full"
+                  onClick={handleFileUpload}
+                  disabled={isRecording}
+                >
+                  <Paperclip className="h-4 w-4" />
+                </Button>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 rounded-full"
+                      disabled={isRecording}
                     >
-                      <rect width="18" height="18" x="3" y="3" rx="2" />
-                      <line x1="9" x2="15" y1="15" y2="9" />
-                    </svg>
-                  </button>
-                  {/* End Mic Button */}
-
-                  {/* Attach Button */}
-                  <button
-                    type="button"
-                    className="inline-flex shrink-0 justify-center items-center size-8 rounded-lg text-gray-500 hover:bg-gray-100 focus:z-10 focus:outline-hidden focus:bg-gray-100 dark:text-neutral-500 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700"
-                    onClick={() => fileInputRef.current.click()}
+                      <Smile className="h-4 w-4" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    className="w-64 p-2"
+                    align="end"
+                    alignOffset={-40}
                   >
-                    <svg
-                      className="shrink-0 size-4"
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-                    </svg>
-                  </button>
-                  {/* End Attach Button */}
-                </div>
-                {/* End Button Group */}
-
-                {/* Button Group */}
-                <div className="flex items-center gap-x-1">
-                  {/* Mic Button */}
-                  <button
-                    type="button"
-                    className="inline-flex shrink-0 justify-center items-center size-8 rounded-lg text-gray-500 hover:bg-gray-100 focus:z-10 focus:outline-hidden focus:bg-gray-100 dark:text-neutral-500 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700"
-                  >
-                    <svg
-                      className="shrink-0 size-4"
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
-                      <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-                      <line x1="12" x2="12" y1="19" y2="22" />
-                    </svg>
-                  </button>
-                  {/* End Mic Button */}
-
-                  {/* Send Button */}
-                  <button
-                    type="button"
-                    className="inline-flex shrink-0 justify-center items-center size-8 rounded-lg text-white bg-blue-600 hover:bg-blue-500 focus:z-10 focus:outline-hidden focus:bg-blue-500"
-                    onClick={handleSendMessage}
-                  >
-                    <svg
-                      className="shrink-0 size-3.5"
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      fill="currentColor"
-                      viewBox="0 0 16 16"
-                    >
-                      <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z" />
-                    </svg>
-                  </button>
-                  {/* End Send Button */}
-                </div>
-                {/* End Button Group */}
+                    <Tabs defaultValue="emoji">
+                      <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="emoji">Emoji</TabsTrigger>
+                        <TabsTrigger value="stickers">Stickers</TabsTrigger>
+                      </TabsList>
+                      <TabsContent value="emoji" className="mt-2">
+                        <div className="grid grid-cols-8 gap-1">
+                          {sampleEmojis.map((emoji, index) => (
+                            <Button
+                              key={index}
+                              variant="ghost"
+                              className="h-7 w-7 p-0"
+                              onClick={() => setMessage((prev) => prev + emoji)}
+                            >
+                              {emoji}
+                            </Button>
+                          ))}
+                        </div>
+                      </TabsContent>
+                      <TabsContent value="stickers" className="mt-2">
+                        <div className="grid grid-cols-3 gap-2">
+                          {[1, 2, 3, 4, 5, 6].map((i) => (
+                            <div
+                              key={i}
+                              className="aspect-square rounded-md bg-muted flex items-center justify-center"
+                            >
+                              <Image className="h-6 w-6 text-muted-foreground" />
+                            </div>
+                          ))}
+                        </div>
+                      </TabsContent>
+                    </Tabs>
+                  </PopoverContent>
+                </Popover>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn(
+                    "h-8 w-8 rounded-full",
+                    isRecording && "text-red-500"
+                  )}
+                  onClick={toggleRecording}
+                >
+                  <Mic className="h-4 w-4" />
+                </Button>
               </div>
             </div>
-            {/* End Toolbar */}
+            {isGenerating ? (
+              <Button variant="destructive" onClick={handleStopGenerating}>
+                <StopCircle className="mr-2 h-4 w-4" />
+                Stop
+              </Button>
+            ) : (
+              <Button
+                onClick={handleSendMessage}
+                disabled={!message.trim() && files.length === 0 && !isRecording}
+              >
+                <Send className="mr-2 h-4 w-4" />
+                Send
+              </Button>
+            )}
           </div>
-          {/* End Input */}
         </div>
-        {/* End Textarea */}
       </div>
-    </main>
+    </div>
   );
 };
 

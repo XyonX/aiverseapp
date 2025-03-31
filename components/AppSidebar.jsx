@@ -212,6 +212,7 @@ export function AppSidebar(props) {
       className="overflow-hidden [&>[data-sidebar=sidebar]]:flex-row"
       {...props}
     >
+      {/* First sidebar for navigation */}
       <Sidebar
         collapsible="none"
         className="!w-[calc(var(--sidebar-width-icon)_+_1px)] border-r"
@@ -222,6 +223,7 @@ export function AppSidebar(props) {
               <SidebarMenuButton size="lg" asChild className="md:h-8 md:p-0">
                 <a href="#">
                   <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                    {/* Logo */}
                     <Command className="size-4" />
                   </div>
                   <div className="grid flex-1 text-left text-sm leading-tight">
@@ -268,7 +270,10 @@ export function AppSidebar(props) {
         </SidebarFooter>
       </Sidebar>
       {/* Sidebar rendering pannel based on selected option from left side pannel */}
-      <Sidebar collapsible="none" className="hidden flex-1 md:flex">
+      <Sidebar
+        collapsible="none"
+        className="hidden flex-1 md:flex w-full overflow-hidden"
+      >
         {renderView()}
       </Sidebar>
     </Sidebar>
