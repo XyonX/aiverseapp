@@ -5,6 +5,7 @@ import axios from "axios";
 import { auth } from "@/app/firebase/config";
 import {
   signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   onAuthStateChanged,
   signOut as firebaseSignOut,
 } from "firebase/auth";
@@ -223,6 +224,43 @@ export function AppProvider({ children }) {
       throw error;
     }
   };
+  const register = async (username, email, password) => {
+    try {
+      const userCredentials = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      //this user contains all data about thelooged user
+      const user = userCredentials.user;
+      console.log("Firebase authentication successful:", user);
+
+      console.log("Fetching Firebase ID token...");
+      const idToken = await user.getIdToken();
+      console.log("ID Token received:", idToken);
+      const response = fetch(`${BACKEND_URL}/api/auth/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          idToken,
+          username,
+        }),
+      });
+      // Handle backend response
+      if (!response.ok) {
+        throw new Error(`Backend error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log("Backend registration successful:", data);
+      return data;
+    } catch (error) {
+      console.error("Error in registration:", error);
+      throw error; // Rethrow error for handling in UI
+    }
+  };
 
   // const logout = () => {
   //   setUser(null);
@@ -323,6 +361,7 @@ export function AppProvider({ children }) {
         setRecentChatContacts,
         user,
         login,
+        register,
         logout: handleLogout,
         theme,
         setTheme,

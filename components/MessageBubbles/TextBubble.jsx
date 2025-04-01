@@ -9,7 +9,7 @@ const TextBubble = ({ sender, message, userAvatar, botAvatar }) => {
   console.log("Got the images from text bubble");
   console.log(userAvatar, botAvatar);
   console.log(`bot url: ${BACKEND_URL}/uploads/${botAvatar}`);
-  console.log(`ser url: ${BACKEND_URL}/${userAvatar} `);
+  console.log(`user url: ${BACKEND_URL}/${userAvatar} `);
   return (
     <>
       {sender === "bot" ? (
@@ -39,7 +39,7 @@ const TextBubble = ({ sender, message, userAvatar, botAvatar }) => {
           </div>
           <div className="shrink-0">
             <Image
-              src={`${BACKEND_URL}${userAvatar}`}
+              src={`${BACKEND_URL}/uploads/${userAvatar}`}
               width={36}
               height={36}
               className="rounded-full"

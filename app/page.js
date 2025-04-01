@@ -78,10 +78,14 @@ const page = () => {
             </Link>
           </nav>
           <div className="flex items-center gap-4">
-            <Button variant="outline" size="sm">
-              Log in
-            </Button>
-            <Button size="sm">Sign up</Button>
+            <Link href="/login">
+              <Button variant="outline" size="sm">
+                Log in
+              </Button>
+            </Link>
+            <Link href="/register">
+              <Button size="sm">Sign up</Button>
+            </Link>
           </div>
         </div>
       </header>
@@ -104,9 +108,11 @@ const page = () => {
                 </p>
               </div>
               <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                <Button size="lg" className="gap-1">
-                  Get Started <ArrowRight className="h-4 w-4" />
-                </Button>
+                <Link href="/register">
+                  <Button size="lg" className="gap-1">
+                    Get Started <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
                 <Button size="lg" variant="outline">
                   Watch Demo
                 </Button>
@@ -200,9 +206,11 @@ const page = () => {
               </div>
 
               <div className="flex flex-col space-y-3">
-                <Button size="lg" className="gap-1 w-full">
-                  Sign Up For Full Access <ArrowRight className="h-4 w-4" />
-                </Button>
+                <Link href="/register">
+                  <Button size="lg" className="gap-1 w-full">
+                    Sign Up For Full Access <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
                 <p className="text-xs text-center text-muted-foreground">
                   The demo has limited functionality. Sign up for the full
                   experience.
