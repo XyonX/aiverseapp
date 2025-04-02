@@ -18,11 +18,18 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useBot } from "@/context/BotContext";
 import { useAppContext } from "@/app/AppProvider";
+import { useRouter } from "next/navigation";
 
 export function ContactsView({ bots, onBotClick }) {
   const BACKEND_URL =
     process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
-  const { aiContacts } = useAppContext();
+  const {
+    user,
+    aiContacts,
+    selectedAIContact,
+    setSelectedAIContact,
+    recentChatContacts,
+  } = useAppContext();
   const [searchQuery, setSearchQuery] = React.useState("");
   const { selectedBot } = useBot();
 
@@ -33,6 +40,13 @@ export function ContactsView({ bots, onBotClick }) {
   const filteredContacts = aiContacts.filter((contact) =>
     contact.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const router = useRouter();
+  const handleBotClick = (bot) => {
+    console.log("bot clicked:", bot);
+    setSelectedAIContact(bot);
+    router.push(`/chat/${bot._id}`); // Navigate to chat page with bot ID
+  };
 
   return (
     <>
@@ -62,7 +76,7 @@ export function ContactsView({ bots, onBotClick }) {
                       ? "bg-blue-50 dark:bg-blue-900/20"
                       : ""
                   }`}
-                  onClick={() => onBotClick(bot)}
+                  onClick={() => handleBotClick(bot)}
                 >
                   <div className="flex items-center">
                     <div className="relative">

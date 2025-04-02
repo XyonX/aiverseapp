@@ -165,6 +165,12 @@ export function AppSidebar(props) {
   const { setSelectedBot } = useBot();
   const { setOpen } = useSidebar();
 
+  const handleBotClick = (bot) => {
+    console.log("bot clicked:", bot);
+    setSelectedAIContact(bot);
+    router.push(`/chat/${bot._id}`); // Navigate to chat page with bot ID
+  };
+
   //actual data
   // const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);

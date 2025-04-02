@@ -9,9 +9,7 @@ import {
   onAuthStateChanged,
   signOut as firebaseSignOut,
 } from "firebase/auth";
-
-// Set axios to include credentials globally for HTTP-only cookies
-axios.defaults.withCredentials = true;
+import { registerUser, loginUser } from "./firebase/firebaseClient";
 
 const AppContext = createContext();
 
@@ -179,95 +177,87 @@ export function AppProvider({ children }) {
       );
     }
   };
+  const register = async (username, email, password) => {
+    try {
+      //register the user with firebase
+      const user = registerUser(email, password);
 
+      //get the ID token for secure backend communication
+      const idToken = await user.getIdToken();
+
+      //call the backend api to create custom user in db
+      const response = await fetch(`${BACKEND_URL}/api/auth/register`, {
+        medthod: "POST",
+        headers: {
+          "Content-Type": "Application/json",
+          Authorization: `Bearer ${idToken}`, //passing the idtoken
+        },
+        body: JSON.stringify({ username, email }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Registration Failed");
+      }
+      console.log("user register");
+      return data;
+    } catch (error) {
+      console.error("Error during registration:", error);
+    }
+  };
   const login = async (email, password) => {
     try {
-      console.log("Attempting login...");
-      console.log("Email:", email);
+      //login to firebase
+      const user = loginUser(email, password);
 
-      // Sign in with Firebase
-      console.log("Signing in with Firebase...");
+      //get idToken for the backend
+      const idToken = user.getIdToken();
+
+      const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "Application/JSON",
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          message: "Demo login data",
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(data.error || "Login Failed at backend");
+      }
+      console.log("User logined at backend");
+    } catch (error) {
+      console.error("Error while trying to login:", error);
+    }
+  };
+  const login1 = async (email, password) => {
+    try {
+      console.log("Attempting login...");
+
+      // 1. Firebase authentication only
       const userCredential = await signInWithEmailAndPassword(
         auth,
         email,
         password
       );
-      //this user contains all data about thelooged user
-      const user = userCredential.user;
-      console.log("Firebase authentication successful:", user);
+      const firebaseUser = userCredential.user;
 
-      console.log("Fetching Firebase ID token...");
-      const idToken = await user.getIdToken();
-      console.log("ID Token received:", idToken);
+      // 2. Get user data through me endpoint (using interceptor)
+      const response = await axios.get(`${BACKEND_URL}/api/auth/me`);
 
-      // Pass the Firebase ID token to your Express login endpoint
-      console.log("Sending login request to backend...");
-      const response = await axios.post(`${BACKEND_URL}/api/auth/login`, {
-        idToken,
-      });
-      const data = response.data;
-      console.log("Login response from backend:", data);
-
-      // Set user state and proceed with app initialization
-      console.log("Setting user state...");
-      setUser(data.user);
-
-      console.log("Fetching bots...");
+      // 3. Update state
+      setUser(response.data.user);
       fetchBots();
-
-      console.log("Fetching recent conversations...");
       fetchRecentConversations();
-
-      console.log("Login process completed successfully.");
     } catch (error) {
       console.error("Login error:", error.message);
       throw error;
     }
   };
-  const register = async (username, email, password) => {
-    try {
-      const userCredentials = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      //this user contains all data about thelooged user
-      const user = userCredentials.user;
-      console.log("Firebase authentication successful:", user);
 
-      console.log("Fetching Firebase ID token...");
-      const idToken = await user.getIdToken();
-      console.log("ID Token received:", idToken);
-      const response = fetch(`${BACKEND_URL}/api/auth/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          idToken,
-          username,
-        }),
-      });
-      // Handle backend response
-      if (!response.ok) {
-        throw new Error(`Backend error: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      console.log("Backend registration successful:", data);
-      return data;
-    } catch (error) {
-      console.error("Error in registration:", error);
-      throw error; // Rethrow error for handling in UI
-    }
-  };
-
-  // const logout = () => {
-  //   setUser(null);
-  //   setAIContacts([]);
-  //   setSelectedAIContact(null);
-  //   setRecentChatContacts([]);
-  // };
   const handleLogout = async () => {
     try {
       await firebaseSignOut(auth);
