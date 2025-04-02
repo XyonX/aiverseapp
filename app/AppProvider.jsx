@@ -3,12 +3,7 @@ import { createContext, useContext, useState, useEffect } from "react";
 import { ThemeProvider } from "next-themes";
 import axios from "axios";
 import { auth } from "@/app/firebase/config";
-import {
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  onAuthStateChanged,
-  signOut as firebaseSignOut,
-} from "firebase/auth";
+import { onAuthStateChanged, signOut as firebaseSignOut } from "firebase/auth";
 import { registerUser, loginUser } from "./firebase/firebaseClient";
 
 const AppContext = createContext();
@@ -32,72 +27,30 @@ export function AppProvider({ children }) {
   const [profileVisibility, setProfileVisibility] = useState("public");
   const [dataSharing, setDataSharing] = useState(true);
 
+  //firebase callback event effect
   useEffect(() => {
-    console.log("[Data Updater] Initializing Firebase auth state listener...");
-
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      console.log("[Auth State] Authentication state changed.");
-
       if (firebaseUser) {
-        console.log(`[Auth State] User signed in. UID: ${firebaseUser.uid}`);
-
         try {
-          console.log("[Auth Token] Fetching fresh ID token...");
           const idToken = await firebaseUser.getIdToken();
-          console.log("[Auth Token] ID Token retrieved successfully.");
-
-          console.log(
-            "[Backend Verification] Sending token to backend for validation..."
-          );
           const response = await axios.get(`${BACKEND_URL}/api/auth/me`, {
             headers: { Authorization: `Bearer ${idToken}` },
           });
-          console.log(response);
-
-          console.log(
-            "[Backend Verification] Token verified. Updating user state..."
-          );
-          console.log("Setting user");
-          console.log(response.data.user);
           setUser(response.data.user);
-
-          console.log(
-            "[Data Updater] Fetching bots and recent conversations..."
-          );
           fetchBots();
           fetchRecentConversations();
         } catch (error) {
-          console.error(
-            "[Backend Verification] Token verification failed:",
-            error
-          );
-          console.log(
-            "[Auth State] Logging out user due to verification failure."
-          );
-          handleLogout();
+          console.error("Token verification failed:", error);
+          setError("Failed to verify user. Please try again."); // Don’t logout
         }
       } else {
-        console.warn("[Auth State] No user detected. Logging out...");
-        handleLogout();
+        setUser(null); // Reset state without forcing logout
+        setLoading(false);
       }
-
       setLoading(false);
-
-      // Log state values at the end
-      console.log("[State Logger] Current State Values:");
-      console.log("[State Logger] user:", user);
-      console.log("[State Logger] aiContacts:", aiContacts);
-      console.log("[State Logger] selectedAIContact:", selectedAIContact);
-      console.log("[State Logger] recentChatContacts:", recentChatContacts);
-
-      console.log("[Data Updater] Authentication state processing complete.");
     });
-
-    return () => {
-      console.log("[Data Updater] Cleaning up Firebase auth listener...");
-      unsubscribe();
-    };
-  }, []); // Added dependencies for logging updates
+    return () => unsubscribe();
+  }, []);
 
   const fetchBots = async () => {
     console.log("[Bot Fetcher] Fetching bots from backend...");
@@ -128,31 +81,10 @@ export function AppProvider({ children }) {
       return;
     }
 
-    console.log(
-      "[Conversation Fetcher] Fetching recent conversations for user:",
-      user._id
-    );
-
     try {
-      console.log("[Conversation Fetcher] Requesting new ID token...");
-      const idToken = await auth.currentUser?.getIdToken();
-
-      const requestUrl = `${BACKEND_URL}/api/conversations/user/${user._id}`;
-      console.log("[Conversation Fetcher] Sending GET request to:", requestUrl);
-
-      const response = await axios.get(requestUrl, {
-        headers: { Authorization: `Bearer ${idToken}` },
-      });
-
-      console.log(
-        "[Conversation Fetcher] Response received. Status:",
-        response.status
+      const response = await axios.get(
+        `${BACKEND_URL}/api/conversations/user/${user._id}`
       );
-      console.log(
-        "[Conversation Fetcher] Raw Conversations Data:",
-        JSON.stringify(response.data, null, 2)
-      );
-      console.log("Conversatio data:", response.data);
 
       const formattedConversations = response.data.map((conv) => ({
         botId: conv.bot._id,
@@ -187,9 +119,9 @@ export function AppProvider({ children }) {
 
       //call the backend api to create custom user in db
       const response = await fetch(`${BACKEND_URL}/api/auth/register`, {
-        medthod: "POST",
+        method: "POST",
         headers: {
-          "Content-Type": "Application/json",
+          "Content-Type": "application/json",
           Authorization: `Bearer ${idToken}`, //passing the idtoken
         },
         body: JSON.stringify({ username, email }),
@@ -204,20 +136,21 @@ export function AppProvider({ children }) {
       return data;
     } catch (error) {
       console.error("Error during registration:", error);
+      throw error; // Allow caller to handle the error
     }
   };
   const login = async (email, password) => {
     try {
       //login to firebase
-      const user = loginUser(email, password);
+      const user = await loginUser(email, password);
 
       //get idToken for the backend
-      const idToken = user.getIdToken();
+      const idToken = await user.getIdToken();
 
       const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
         method: "POST",
         headers: {
-          "Content-Type": "Application/JSON",
+          "Content-Type": "application/json",
           Authorization: `Bearer ${idToken}`,
         },
         body: JSON.stringify({
@@ -231,29 +164,6 @@ export function AppProvider({ children }) {
       console.log("User logined at backend");
     } catch (error) {
       console.error("Error while trying to login:", error);
-    }
-  };
-  const login1 = async (email, password) => {
-    try {
-      console.log("Attempting login...");
-
-      // 1. Firebase authentication only
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      const firebaseUser = userCredential.user;
-
-      // 2. Get user data through me endpoint (using interceptor)
-      const response = await axios.get(`${BACKEND_URL}/api/auth/me`);
-
-      // 3. Update state
-      setUser(response.data.user);
-      fetchBots();
-      fetchRecentConversations();
-    } catch (error) {
-      console.error("Login error:", error.message);
       throw error;
     }
   };
@@ -261,7 +171,7 @@ export function AppProvider({ children }) {
   const handleLogout = async () => {
     try {
       await firebaseSignOut(auth);
-      await axios.post(`${BACKEND_URL}/api/auth/logout`);
+      // await axios.post(`${BACKEND_URL}/api/auth/logout`);
     } catch (error) {
       console.error("Logout error:", error);
     } finally {
@@ -272,61 +182,21 @@ export function AppProvider({ children }) {
     }
   };
 
+  //axios interceptor to attach header
   // Add authorization header to all requests if logged in
   useEffect(() => {
-    console.log("[useEffect] Setting up Axios request interceptor...");
-
     const requestInterceptor = axios.interceptors.request.use(
       async (config) => {
-        console.log("[Axios Interceptor] Intercepting request:", config.url);
-
         if (auth.currentUser) {
-          try {
-            console.log("[Axios Interceptor] Fetching Firebase ID token...");
-            const token = await auth.currentUser.getIdToken();
-            config.headers.Authorization = `Bearer ${token}`;
-            console.log(
-              "[Axios Interceptor] Token attached to request headers."
-            );
-          } catch (error) {
-            console.error("[Axios Interceptor] Error fetching token:", error);
-          }
-        } else {
-          console.warn("[Axios Interceptor] No authenticated user found.");
+          const token = await auth.currentUser.getIdToken();
+          config.headers.Authorization = `Bearer ${token}`;
         }
-
         return config;
       },
-      (error) => {
-        console.error("[Axios Interceptor] Request error:", error);
-        return Promise.reject(error);
-      }
+      (error) => Promise.reject(error)
     );
-
-    return () => {
-      console.log("[useEffect] Ejecting Axios request interceptor...");
-      axios.interceptors.request.eject(requestInterceptor);
-    };
+    return () => axios.interceptors.request.eject(requestInterceptor);
   }, []);
-
-  // // Add useEffect for initial auth check
-  // useEffect(() => {
-  //   const checkAuth = async () => {
-  //     try {
-  //       const response = await axios.get(`${BACKEND_URL}/api/auth/me`);
-  //       setUser(response.data.user);
-  //       fetchBots();
-  //       fetchRecentConversations();
-  //     } catch (error) {
-  //       setUser(null);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   checkAuth();
-  // }, []); // Run once on mount
-  // Firebase auth state listener
 
   useEffect(() => {
     if (user) {
