@@ -64,7 +64,8 @@ import { ContactsView } from "./ContactsView";
 import { SettingsView } from "./SettingsView";
 import { useBot } from "@/context/BotContext";
 import { useAppContext } from "@/app/AppProvider";
-
+import { ThemeToggle } from "./theme-toggle";
+import { Separator } from "@/components/ui/separator";
 const data = {
   user: {
     name: "shadcn",
@@ -272,6 +273,10 @@ export function AppSidebar(props) {
           </SidebarGroup>
         </SidebarContent>
         <SidebarFooter>
+          <div className="px-2 py-1 flex justify-center">
+            <ThemeToggle />
+          </div>
+          <Separator className="my-1" />
           <NavUser user={data.user} />
         </SidebarFooter>
       </Sidebar>

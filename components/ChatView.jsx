@@ -276,6 +276,13 @@ export function ChatView({ bots, featuredBots, onBotClick }) {
                       let bot = aiContacts.find(
                         (bot) => bot._id === chat.botId
                       );
+                      // Format the Date object to a readable string
+                      const formattedTime = new Date(
+                        chat.time
+                      ).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      });
 
                       return (
                         <li
@@ -322,7 +329,7 @@ export function ChatView({ bots, featuredBots, onBotClick }) {
                                   {bot.name}
                                 </h4>
                                 <span className="text-xs text-gray-500 dark:text-gray-400">
-                                  {chat.time}
+                                  {formattedTime}
                                 </span>
                               </div>
                               <div className="flex justify-between items-center">
