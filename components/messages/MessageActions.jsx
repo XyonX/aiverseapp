@@ -57,7 +57,7 @@ export function MessageActions({
     <div
       className={cn(
         "absolute -top-10 right-0 flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100",
-        { "left-0 right-auto": role === "assistant" }
+        { "left-0 right-auto": role === "bot" }
       )}
     >
       <Popover>
@@ -104,7 +104,7 @@ export function MessageActions({
         <Copy className="h-3.5 w-3.5" />
       </Button>
 
-      {role === "assistant" && onRegenerate && (
+      {role === "bot" && onRegenerate && (
         <Button
           variant="secondary"
           size="icon"

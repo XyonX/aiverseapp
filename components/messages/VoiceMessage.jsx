@@ -12,7 +12,7 @@ export function VoiceMessage({ duration, role }) {
     <div
       className={cn("flex items-center gap-2 rounded-md p-2", {
         "bg-primary/80": role === "user",
-        "bg-background/50": role === "assistant",
+        "bg-background/50": role === "bot",
       })}
     >
       <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">

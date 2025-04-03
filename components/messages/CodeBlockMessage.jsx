@@ -1,6 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Copy } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export function CodeBlockMessage({ content, onCopy }) {
   // Simple formatting for code blocks
@@ -23,14 +24,17 @@ export function CodeBlockMessage({ content, onCopy }) {
           return (
             <div
               key={index}
-              className="my-2 rounded-md bg-muted p-3 relative group"
+              className={cn(
+                "my-2 rounded-md p-3 relative group",
+                "bg-background/50 dark:bg-background/20"
+              )}
             >
               {language && (
                 <div className="text-xs text-muted-foreground mb-2">
                   {language}
                 </div>
               )}
-              <pre className="text-sm overflow-x-auto">{code}</pre>
+              {code}
               <Button
                 variant="ghost"
                 size="icon"

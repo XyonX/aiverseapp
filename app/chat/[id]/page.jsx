@@ -203,6 +203,11 @@ const NewChatPage = () => {
   const messagesEndRef = useRef(null);
   const containerRef = useRef(null);
 
+  // Auto-scroll to bottom when messages change
+  React.useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
   //effect to scroll to chatbottom
   useEffect(() => {
     // Scroll to the bottom of the chat container whenever messages update
@@ -460,263 +465,6 @@ const NewChatPage = () => {
     }
   };
 
-  const handleSendMessage1 = async () => {
-    if (!selectedAIContact || !user) {
-      console.warn(
-        "[Message Sender] No selected AI contact or user. Exiting function."
-      );
-      return;
-    }
-    if (!message.trim() && !selectedFile) {
-      console.warn(
-        "[Message Sender] Empty message and no file attached. Exiting function."
-      );
-      return;
-    }
-    if (selectedFile && !message.trim()) {
-      alert("Please add a message to explain the file");
-      console.warn("[Message Sender] File attached but no message provided.");
-      return;
-    }
-
-    console.log("[Message Sender] Preparing to send message...");
-
-    // Create temporary user message
-    const tempId = `temp-${Date.now()}`;
-    const tempUserMessage = {
-      _id: tempId,
-      conversation: conversation?._id,
-      sender: "user",
-      textContent: message,
-      type: "text",
-      timestamp: new Date(),
-      isTemporary: true,
-      ...(selectedFile && { file: selectedFile }),
-    };
-
-    console.log(
-      "[Message Sender] Adding temporary user message:",
-      tempUserMessage
-    );
-    setMessages((prev) => [...prev, tempUserMessage]);
-
-    setMessage("");
-    setSelectedFile(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
-    setIsBotThinking(true);
-
-    try {
-      let convId = conversation?._id;
-      if (!convId) {
-        console.log(
-          "[Message Sender] No existing conversation. Creating a new one..."
-        );
-        const convResponse = await axios.post(
-          `${BACKEND_URL}/api/conversations`,
-          { userId: user._id, botId: selectedAIContact._id },
-          { withCredentials: true }
-        );
-        convId = convResponse.data._id;
-        setConversation(convResponse.data);
-        console.log(
-          "[Message Sender] New conversation created with ID:",
-          convId
-        );
-      } else {
-        console.log("[Message Sender] Using existing conversation ID:", convId);
-      }
-
-      // Prepare form data
-      const formData = new FormData();
-      formData.append("conversationId", convId);
-      formData.append("textContent", message);
-      formData.append("tempUserMessageId", tempId);
-      if (selectedFile) formData.append("file", selectedFile);
-
-      console.log("[Message Sender] Sending message data:", {
-        conversationId: convId,
-        textContent: message,
-        hasFile: !!selectedFile,
-      });
-
-      if (selectedAIContact.streamingEnabled) {
-        console.log("Streaming is enables");
-
-        console.log("[Message Sender] Starting mock streaming...");
-
-        // Mock stream implementation
-        const mockStream = async () => {
-          // Generate temporary IDs
-          const botTempId = `bot-temp-${Date.now()}`;
-
-          // Simulate network delay
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-
-          // Simulate server response
-          const encoder = new TextEncoder();
-          const mockEvents = [
-            JSON.stringify({
-              type: "init",
-              userMessage: { ...tempUserMessage, isTemporary: false },
-              botMessage: {
-                _id: botTempId,
-                conversation: convId,
-                sender: "bot",
-                textContent: "",
-                type: "text",
-                timestamp: new Date(),
-                isThinking: true,
-                isTemporary: true,
-              },
-            }),
-            ...["Hello", "! How", " can I", " help", " you today?"].map(
-              (chunk) => JSON.stringify({ type: "chunk", content: chunk })
-            ),
-            JSON.stringify({
-              type: "complete",
-              botMessage: {
-                _id: botTempId,
-                textContent: "Hello! How can I help you today?",
-                isTemporary: false,
-                timestamp: new Date(),
-              },
-            }),
-          ];
-
-          // Create mock readable stream
-          const stream = new ReadableStream({
-            async start(controller) {
-              for (const event of mockEvents) {
-                controller.enqueue(encoder.encode(`data: ${event}\n\n`));
-                await new Promise((resolve) => setTimeout(resolve, 300));
-              }
-              controller.close();
-            },
-          });
-
-          return {
-            body: stream,
-            getReader: () => stream.getReader(),
-          };
-        };
-
-        // Use mock stream instead of real API call
-        const mockResponse = await mockStream();
-        const reader = mockResponse.getReader();
-
-        let buffer = "";
-        let botMessageId = null;
-
-        // Existing stream processing logic
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          buffer += new TextDecoder().decode(value);
-          const parts = buffer.split("\n\n");
-          buffer = parts.pop() || "";
-
-          for (const part of parts) {
-            if (!part.startsWith("data: ")) continue;
-
-            try {
-              const data = JSON.parse(part.slice(6));
-              console.log("[Mock Stream] Processing event:", data.type);
-
-              switch (data.type) {
-                case "init":
-                  setMessages((prev) => [
-                    ...prev.filter((msg) => msg._id !== tempId),
-                    data.userMessage,
-                    { ...data.botMessage, isThinking: true },
-                  ]);
-                  botMessageId = data.botMessage._id;
-                  break;
-
-                case "chunk":
-                  if (botMessageId) {
-                    setMessages((prev) =>
-                      prev.map((msg) =>
-                        msg._id === botMessageId
-                          ? {
-                              ...msg,
-                              textContent: msg.textContent + data.content,
-                              isThinking: false,
-                            }
-                          : msg
-                      )
-                    );
-                  }
-                  break;
-
-                case "complete":
-                  if (botMessageId) {
-                    setMessages((prev) =>
-                      prev.map((msg) =>
-                        msg._id === botMessageId
-                          ? { ...data.botMessage, isTemporary: false }
-                          : msg
-                      )
-                    );
-                  }
-                  setIsBotThinking(false);
-                  break;
-
-                case "error":
-                  setMessages((prev) =>
-                    prev.filter(
-                      (msg) => msg._id !== tempId && msg._id !== botMessageId
-                    )
-                  );
-                  alert(`Error: ${data.message}`);
-                  setIsBotThinking(false);
-                  break;
-              }
-            } catch (error) {
-              console.error("[Mock Stream] Error processing event:", error);
-            }
-          }
-        }
-      } else {
-        // Non-streaming handling
-        console.log(
-          "[Message Sender] AI does not support streaming. Sending standard request..."
-        );
-        const response = await axios.post(
-          `${BACKEND_URL}/api/messages`,
-          formData,
-          {
-            withCredentials: true,
-            headers: { "Content-Type": "multipart/form-data" },
-          }
-        );
-
-        console.log(
-          "[Message Sender] Non-streaming response received:",
-          response.data
-        );
-
-        const { userMessage, botMessage } = response.data;
-        console.log("[Message Sender] Updating messages with bot response...");
-
-        setMessages((prev) => [
-          ...prev.filter((msg) => msg._id !== tempId),
-          userMessage,
-          botMessage,
-        ]);
-      }
-    } catch (error) {
-      console.error("[Message Sender] Message send failed:", error);
-      setMessages((prev) => prev.filter((msg) => msg._id !== tempId));
-      alert("Failed to send message. Please try again.");
-    } finally {
-      console.log(
-        "[Message Sender] Message send process complete. Resetting bot thinking state."
-      );
-      setIsBotThinking(false);
-    }
-  };
-
   const handleFileSelect = (e) => {
     setSelectedFile(e.target.files[0]);
   };
@@ -728,8 +476,20 @@ const NewChatPage = () => {
       </div>
     );
   }
-  console.log("user avatar");
-  console.log(user.avatar);
+
+  //message utility functioon
+
+  const toggleBookmark = (messageId) => {
+    console.log(`Message bookmarked for:${messageId}`);
+  };
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+  };
+
+  const regenerateResponse = () => {
+    console.log("Regenerate message called");
+  };
 
   // return <ConversationView bot={selectedAIContact} />;
   return (
@@ -828,42 +588,20 @@ const NewChatPage = () => {
       </div>
       {/* Messages area - Scrollable */}
       <ScrollArea className="h-[calc(100vh-180px)]">
-        <ul className="mt-16 space-y-5">
-          {messages.length > 0 ? (
-            messages.map((msg, index) => {
-              if (msg.type === "text") {
-                return (
-                  <TextBubble
-                    message={msg.textContent}
-                    sender={msg.sender}
-                    userAvatar={user.avatar}
-                    botAvatar={selectedAIContact.avatar}
-                  />
-                );
-              } else if (msg.type === "image") {
-                return (
-                  <ImageBubble
-                    message={msg}
-                    sender={msg.sender}
-                    userAvatar={user.avatar}
-                    botAvatar={selectedAIContact.avatar}
-                  />
-                );
-              }
-            })
-          ) : (
-            <li className="text-center text-gray-500 dark:text-neutral-400">
-              No messages yet. Start the conversation!
-            </li>
-          )}
-          {isBotThinking && (
-            <ThinkingBubble
-              userAvatar={user.avatar}
-              botAvatar={selectedAIContact.avatar}
-              sender={"bot"}
-            />
-          )}
-        </ul>
+        <MessageContainer
+          messages={messages}
+          onBookmark={toggleBookmark}
+          onCopy={copyToClipboard}
+          onRegenerate={regenerateResponse}
+        />
+        {isBotThinking && (
+          <ThinkingBubble
+            userAvatar={user.avatar}
+            botAvatar={selectedAIContact.avatar}
+            sender={"bot"}
+          />
+        )}
+        <div ref={messagesEndRef} />
       </ScrollArea>
       {/* Fixed bottom section */}
       <div className="border-t bg-background sticky bottom-0 z-10">

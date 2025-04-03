@@ -5,7 +5,7 @@ export function MessageTimestamp({ timestamp, role }) {
     <div
       className={cn("mt-1 text-right text-xs", {
         "text-primary-foreground/70": role === "user",
-        "text-muted-foreground": role === "assistant",
+        "text-muted-foreground": role === "bot",
       })}
     >
       {timestamp}
