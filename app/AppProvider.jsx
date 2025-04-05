@@ -18,6 +18,7 @@ export function AppProvider({ children }) {
   const [recentChatContacts, setRecentChatContacts] = useState([]);
   const [activeTab, setActiveTab] = useState("chats");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null); // Added error state for better UX
 
   //for settings
   const [theme, setTheme] = useState("light");
@@ -26,6 +27,63 @@ export function AppProvider({ children }) {
   const [notificationSound, setNotificationSound] = useState("default");
   const [profileVisibility, setProfileVisibility] = useState("public");
   const [dataSharing, setDataSharing] = useState(true);
+
+  // Load settings from localStorage
+  const loadSettings = () => {
+    const savedSettings = JSON.parse(localStorage.getItem("appSettings"));
+    if (savedSettings) {
+      setTheme(savedSettings.theme || "light");
+      setFontSize(savedSettings.fontSize || "medium");
+      setNotificationsEnabled(savedSettings.notificationsEnabled ?? true);
+      setNotificationSound(savedSettings.notificationSound || "default");
+      setProfileVisibility(savedSettings.profileVisibility || "public");
+      setDataSharing(savedSettings.dataSharing ?? true);
+    }
+  };
+
+  // Save settings to localStorage
+  const saveSettings = () => {
+    const settings = {
+      theme,
+      fontSize,
+      notificationsEnabled,
+      notificationSound,
+      profileVisibility,
+      dataSharing,
+    };
+    localStorage.setItem("appSettings", JSON.stringify(settings));
+  };
+
+  // Load AI contacts from localStorage
+  const loadAIContacts = () => {
+    const savedAIContacts = JSON.parse(localStorage.getItem("aiContacts"));
+    if (savedAIContacts) setAIContacts(savedAIContacts);
+  };
+
+  // Save AI contacts to localStorage
+  const saveAIContacts = () => {
+    localStorage.setItem("aiContacts", JSON.stringify(aiContacts));
+  };
+
+  // Load recent chat contacts from localStorage for the current user
+  const loadRecentChatContacts = () => {
+    if (user) {
+      const savedRecentChats = JSON.parse(
+        localStorage.getItem(`recentChats_${user._id}`)
+      );
+      if (savedRecentChats) setRecentChatContacts(savedRecentChats);
+    }
+  };
+
+  // Save recent chat contacts to localStorage for the current user
+  const saveRecentChatContacts = () => {
+    if (user) {
+      localStorage.setItem(
+        `recentChats_${user._id}`,
+        JSON.stringify(recentChatContacts)
+      );
+    }
+  };
 
   //firebase callback event effect
   useEffect(() => {
@@ -37,8 +95,9 @@ export function AppProvider({ children }) {
             headers: { Authorization: `Bearer ${idToken}` },
           });
           setUser(response.data.user);
-          fetchBots();
-          fetchRecentConversations();
+          // loadRecentChatContacts(); // Load cached recent chats immediately
+          fetchBots(); // Fetch AI contacts
+          fetchRecentConversations(); // Fetch latest chats from server
         } catch (error) {
           console.error("Token verification failed:", error);
           setError("Failed to verify user. Please try again."); // Don’t logout
@@ -52,6 +111,14 @@ export function AppProvider({ children }) {
     return () => unsubscribe();
   }, []);
 
+  // Load cached recent chats when user changes
+  useEffect(() => {
+    if (user) {
+      loadRecentChatContacts();
+    }
+  }, [user]);
+
+  // Fetch AI bots from backend
   const fetchBots = async () => {
     console.log("[Bot Fetcher] Fetching bots from backend...");
 
@@ -75,6 +142,7 @@ export function AppProvider({ children }) {
     }
   };
 
+  // Fetch recent conversations from backend
   const fetchRecentConversations = async () => {
     if (!user) {
       console.warn("[Conversation Fetcher] No user found. Skipping fetch.");
@@ -198,16 +266,46 @@ export function AppProvider({ children }) {
     return () => axios.interceptors.request.eject(requestInterceptor);
   }, []);
 
+  // Load settings and AI contacts on app mount
   useEffect(() => {
-    if (user) {
-      fetchBots();
-      fetchRecentConversations(); // Uncommented for consistency
-    }
-  }, [user]);
+    loadSettings();
+    loadAIContacts();
+  }, []);
 
-  const changeTab = (tabName) => {
-    setActiveTab(tabName);
-  };
+  // Save settings when they change
+  useEffect(() => {
+    saveSettings();
+  }, [
+    theme,
+    fontSize,
+    notificationsEnabled,
+    notificationSound,
+    profileVisibility,
+    dataSharing,
+  ]);
+
+  // Save AI contacts when they change
+  useEffect(() => {
+    if (aiContacts.length > 0) {
+      saveAIContacts();
+    }
+  }, [aiContacts]);
+
+  // Save recent chat contacts when they change
+  useEffect(() => {
+    if (user && recentChatContacts.length > 0) {
+      saveRecentChatContacts();
+    }
+  }, [recentChatContacts, user]);
+
+  // useEffect(() => {
+  //   if (user) {
+  //     fetchBots();
+  //     fetchRecentConversations(); // Uncommented for consistency
+  //   }
+  // }, [user]);
+
+  const changeTab = (tabName) => setActiveTab(tabName);
 
   return (
     <AppContext.Provider
