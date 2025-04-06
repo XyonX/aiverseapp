@@ -1,4 +1,5 @@
 import React from "react";
+import ConversationArea from "./final/ConversationArea";
 
 function ServerContainer() {
   return <div className="bg-[#edf67d] w-20">SC</div>;
@@ -18,7 +19,7 @@ const DiscordLayout = () => {
     <div className="flex  w-[100vw] h-[100vh]">
       <ServerContainer />
       <ChannelList />
-      <ChatView />
+      <ConversationArea />
       <Members />
     </div>
   );

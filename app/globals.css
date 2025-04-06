@@ -217,116 +217,108 @@ input[type="file"]::before {
 
 @layer base {
   :root {
-    /* Light mode palette */
-    --background: 0 0% 96%; /* #F5F5F5 warm off-white */
-    --foreground: 0 0% 20%; /* #333333 deep charcoal */
-
-    --card: 0 0% 96%;
-    --card-foreground: 0 0% 20%;
-
-    --popover: 0 0% 96%;
-    --popover-foreground: 0 0% 20%;
-
-    --primary: 182 22% 60%; /* #7FB3B5 muted teal */
-    --primary-foreground: 0 0% 98%;
-
-    --secondary: 0 0% 88%; /* #E0E0E0 light gray */
-    --secondary-foreground: 0 0% 40%; /* #666666 medium-cool gray */
-
-    --muted: 0 0% 88%;
-    --muted-foreground: 0 0% 40%;
-
-    --accent: 0 0% 88%;
-    --accent-foreground: 0 0% 20%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 0 0% 88%; /* #E0E0E0 light gray */
-    --input: 0 0% 88%;
-    --ring: 182 22% 60%;
-
-    /* Custom theme colors */
-    --lavender: 267 30% 62%; /* #9A86B5 soft periwinkle */
-    --lavender-foreground: 0 0% 98%;
-
-    --teal: 182 22% 60%; /* #7FB3B5 muted teal */
-    --teal-foreground: 0 0% 98%;
-
-    --pink: 351 50% 78%; /* #E8A3AD dusty rose */
-    --pink-foreground: 0 0% 20%;
-
-    /* Sidebar specific colors */
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 0 0% 20%;
-    --sidebar-primary: 267 30% 62%; /* #9A86B5 soft periwinkle */
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 0 0% 92%;
-    --sidebar-accent-foreground: 0 0% 20%;
-    --sidebar-border: 0 0% 88%;
-    --sidebar-ring: 267 30% 62%;
-
+    /* --- Existing Theme --- */
+    --background: 0 0% 98%; /* #FAFAFA */
+    --foreground: 0 0% 9%; /* #181818 */
+    --card: 0 0% 100%; /* #FFFFFF */
+    --card-foreground: 0 0% 9%; /* #181818 */
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 9%;
+    --primary: 150 100% 27%; /* #008A4A */
+    --primary-foreground: 0 0% 98%; /* #FAFAFA */
+    --secondary: 211 100% 37%; /* #005BBB */
+    --secondary-foreground: 0 0% 98%; /* #FAFAFA */
+    --muted: 0 0% 95%; /* Lighter Muted BG for Light Mode */
+    --muted-foreground: 0 0% 40%; /* #666666 */
+    --accent: 0 0% 95%; /* Matches Muted BG for Light Mode Accents */
+    --accent-foreground: 0 0% 9%; /* #181818 */
+    --warning: 32 96% 44%; /* #D97706 */
+    --warning-foreground: 0 0% 98%; /* #FAFAFA */
+    --destructive: 0 72% 57%; /* #E53E3E */
+    --destructive-foreground: 0 0% 98%; /* #FAFAFA */
+    --border: 0 0% 88%; /* #E0E0E0 */
+    --input: 0 0% 94%; /* #F0F0F0 */
+    --ring: 211 100% 37%; /* #005BBB */
     --radius: 0.5rem;
-    --sidebar-width: 450px;
+
+    /* --- NEW: Chat & Code Theme --- */
+    /* Translating Radix slate-3/slate-12 for incoming bubble */
+    --chat-bubble-incoming-background: 0 0% 95%; /* #F1F1F1 - Light Gray */
+    --chat-bubble-incoming-foreground: 0 0% 9%; /* #181818 - Dark Text */
+    /* Translating Radix blue-9/white for outgoing bubble */
+    --chat-bubble-outgoing-background: 221 83% 53%; /* #3B82F6 - Stronger Blue */
+    --chat-bubble-outgoing-foreground: 0 0% 100%; /* #FFFFFF - White Text */
+    /* Standard light mode code block */
+    --code-block-background: 0 0% 96%; /* #F5F5F5 */
+    --code-block-foreground: 0 0% 20%; /* #333333 */
+    /* --font-mono will be defined by next/font */
   }
 
   .dark {
-    /* Dark mode palette */
-    --background: 0 0% 17%; /* #2C2C2C slate gray */
-    --foreground: 0 0% 89%; /* #E4E4E4 light gray */
+    /* --- Existing Theme --- */
+    --background: 0 0% 9%; /* #181818 */
+    --foreground: 0 0% 97%; /* #F7F7F7 */
+    --card: 0 0% 14%; /* #242424 */
+    --card-foreground: 0 0% 94%; /* #F0F0F0 */
+    --popover: 0 0% 14%;
+    --popover-foreground: 0 0% 94%;
+    --primary: 150 100% 50%; /* #00FF85 */
+    --primary-foreground: 0 0% 9%; /* #181818 */
+    --secondary: 211 100% 56%; /* #1E90FF */
+    --secondary-foreground: 0 0% 98%; /* #FAFAFA */
+    --muted: 0 0% 16%; /* Darker Muted BG for Dark Mode */
+    --muted-foreground: 0 0% 63%; /* #A0A0A0 */
+    --accent: 0 0% 16%; /* Matches Muted BG for Dark Mode Accents */
+    --accent-foreground: 0 0% 97%; /* #F7F7F7 */
+    --warning: 36 100% 50%; /* #FF9500 */
+    --warning-foreground: 0 0% 9%; /* #181818 */
+    --destructive: 0 100% 65%; /* #FF4D4D */
+    --destructive-foreground: 0 0% 98%; /* #FAFAFA */
+    --border: 0 0% 20%; /* #333333 */
+    --input: 0 0% 16%; /* #2A2A2A */
+    --ring: 211 100% 56%; /* #1E90FF */
+    /* --radius is inherited */
 
-    --card: 0 0% 17%;
-    --card-foreground: 0 0% 89%;
-
-    --popover: 0 0% 17%;
-    --popover-foreground: 0 0% 89%;
-
-    --primary: 182 59% 76%; /* #A8DADC light cyan */
-    --primary-foreground: 0 0% 17%;
-
-    --secondary: 0 0% 25%;
-    --secondary-foreground: 0 0% 89%;
-
-    --muted: 0 0% 25%;
-    --muted-foreground: 0 0% 70%;
-
-    --accent: 0 0% 25%;
-    --accent-foreground: 0 0% 89%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 89%;
-
-    --border: 0 0% 25%;
-    --input: 0 0% 25%;
-    --ring: 182 59% 76%;
-
-    /* Custom theme colors */
-    --lavender: 270 40% 71%; /* #B39CD0 lavender */
-    --lavender-foreground: 0 0% 17%;
-
-    --teal: 182 59% 76%; /* #A8DADC light cyan */
-    --teal-foreground: 0 0% 17%;
-
-    --pink: 350 100% 88%; /* #FFC1CC soft pink */
-    --pink-foreground: 0 0% 17%;
-
-    /* Sidebar specific colors */
-    --sidebar-background: 0 0% 15%;
-    --sidebar-foreground: 0 0% 89%;
-    --sidebar-primary: 270 40% 71%; /* #B39CD0 lavender */
-    --sidebar-primary-foreground: 0 0% 17%;
-    --sidebar-accent: 0 0% 22%;
-    --sidebar-accent-foreground: 0 0% 89%;
-    --sidebar-border: 0 0% 25%;
-    --sidebar-ring: 270 40% 71%;
+    /* --- NEW: Chat & Code Theme --- */
+    /* Translating Radix slate-3/slate-12 */
+    --chat-bubble-incoming-background: 0 0% 16%; /* #2A2A2A - Dark Gray */
+    --chat-bubble-incoming-foreground: 0 0% 94%; /* #F0F0F0 - Light Text */
+    /* Translating Radix blue-9/white */
+    --chat-bubble-outgoing-background: 211 100% 56%; /* #1E90FF - Electric Blue */
+    --chat-bubble-outgoing-foreground: 0 0% 100%; /* #FFFFFF - White Text */
+    /* Standard dark mode code block */
+    --code-block-background: 0 0% 12%; /* #1F1F1F */
+    --code-block-foreground: 0 0% 85%; /* #D9D9D9 */
+    /* --font-mono will be defined by next/font */
   }
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
+  /* Apply base styles using theme variables */
   body {
     @apply bg-background text-foreground;
+    @apply font-sans; /* Apply the default sans-serif font (Inter) */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-semibold tracking-tight;
+  }
+
+  /* Base focus ring */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-offset-2 ring-ring ring-offset-background;
+  }
+
+  /* --- NEW: Base style for code using the mono font --- */
+  code,
+  pre {
+    @apply font-mono;
   }
 }

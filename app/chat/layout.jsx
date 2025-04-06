@@ -204,3 +204,13 @@ import DiscordLayout from "@/components/DiscordLayout";
 export default function ChatLayout({ children }) {
   return <DiscordLayout />;
 }
+
+{
+  /* <SidebarProvider
+style={{
+  "--sidebar-width": "450px",
+}}
+>
+{children}
+</SidebarProvider> */
+}
