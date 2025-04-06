@@ -27,7 +27,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAppContext } from "@/app/AppProvider";
 import { useRouter } from "next/navigation";
 
-export function ChatView() {
+export function ChatTab() {
   const BACKEND_URL =
     process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
 

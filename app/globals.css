@@ -267,6 +267,7 @@ input[type="file"]::before {
     --sidebar-ring: 267 30% 62%;
 
     --radius: 0.5rem;
+    --sidebar-width: 450px;
   }
 
   .dark {

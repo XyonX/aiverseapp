@@ -171,43 +171,36 @@ import { AppSidebar } from "../../components/AppSidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { ConversationView } from "@/components/ConversationView";
 import { BotProvider, useBot } from "@/context/BotContext";
+import DiscordLayout from "@/components/DiscordLayout";
+
+// export default function ChatLayout({ children }) {
+//   if (!children)
+//     return (
+//       <>
+//         <AppSidebar />
+//         <SidebarInset>
+//           <div className=" hidden md:flex h-full items-center justify-center bg-muted/20">
+//             <div className="text-center">
+//               <h2 className="text-2xl font-bold mb-2">
+//                 Select a chat to start messaging
+//               </h2>
+//               <p className="text-muted-foreground">
+//                 Choose a bot from the sidebar to begin a conversation eststfggt
+//               </p>
+//             </div>
+//           </div>
+//         </SidebarInset>
+//       </>
+//     );
+//   else
+//     return (
+//       <>
+//         <AppSidebar />
+//         <div className="w-full">{children}</div>
+//       </>
+//     );
+// }
 
 export default function ChatLayout({ children }) {
-  if (!children)
-    return (
-      <BotProvider>
-        <SidebarProvider
-          style={{
-            "--sidebar-width": "450px",
-          }}
-        >
-          <AppSidebar />
-          <SidebarInset>
-            <div className=" hidden md:flex h-full items-center justify-center bg-muted/20">
-              <div className="text-center">
-                <h2 className="text-2xl font-bold mb-2">
-                  Select a chat to start messaging
-                </h2>
-                <p className="text-muted-foreground">
-                  Choose a bot from the sidebar to begin a conversation
-                </p>
-              </div>
-            </div>
-          </SidebarInset>
-        </SidebarProvider>
-      </BotProvider>
-    );
-  else
-    return (
-      <BotProvider>
-        <SidebarProvider
-          style={{
-            "--sidebar-width": "450px",
-          }}
-        >
-          <AppSidebar />
-          <div className="w-full">{children}</div>
-        </SidebarProvider>
-      </BotProvider>
-    );
+  return <DiscordLayout />;
 }
