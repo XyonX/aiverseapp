@@ -1,5 +1,9 @@
 import React from "react";
 import ChatMessage from "./ChatMessage";
+import ChatHeader from "./ChatHeader"; // Import Header
+import ChatInput from "./ChatInput"; // Import Input
+import { SendHorizontal, Paperclip, Mic, Bot } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 
 // Dummy message data for now
 const dummyMessages = [
@@ -98,34 +102,86 @@ const bot = {
   isActive: true,
 };
 
-const ConversationArea = ({ messages = dummyMessages }) => {
+const ConversationArea = ({
+  initialMessages = dummyMessages,
+  currentBot = bot, // Use default bot if none provided
+}) => {
+  const [messages, setMessages] = useState(initialMessages);
+  const [isBotLoading, setIsBotLoading] = useState(false); // Example loading state
+  const messagesEndRef = useRef(null); // Ref for scrolling
+
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  // Function to handle sending a message
+  const handleSendMessage = async (text) => {
+    console.log("Sending message:", text);
+
+    // 1. Add user message immediately to the list
+    const userMessage = {
+      id: `user-${Date.now()}`,
+      sender: "You",
+      content: text,
+      timestamp: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      isOutgoing: true,
+    };
+    setMessages((prevMessages) => [...prevMessages, userMessage]);
+
+    // 2. Set loading state for input/bot response
+    setIsBotLoading(true);
+
+    // 3. Simulate bot response (replace with actual API call)
+    await new Promise((resolve) => setTimeout(resolve, 1500)); // Simulate network delay
+
+    const botResponse = {
+      id: `bot-${Date.now()}`,
+      sender: "Bot (Gemini)",
+      content: `Okay, I received: "${text}". Here is a simulated response.`,
+      timestamp: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      isOutgoing: false,
+      // Add code prop if applicable based on response
+    };
+    setMessages((prevMessages) => [...prevMessages, botResponse]);
+
+    // 4. Turn off loading state
+    setIsBotLoading(false);
+  };
   return (
-    // Outer container: Handles scrolling and takes available space
-    <div className="flex-1 h-full overflow-y-auto bg-background scrollbar-hide">
-      <div className="flex flex-col">
-        {/* chat bot header */}
-        <div></div>
-        {/* chat bubble area */}
-        <div className="py-2">
-          {/* Inner container: Enforces max-width and centers content */}
-          <div className="max-w-6xl mx-auto px-4 py-6 md:py-8">
-            {" "}
-            {/* Adjusted max-width and padding */}
-            {/* Message List */}
-            <div className="flex flex-col gap-5 md:gap-6">
-              {" "}
-              {/* Increased gap between messages */}
-              {messages.map((msg) => (
-                <ChatMessage key={msg.id} message={msg} />
-              ))}
-              {/* Add Loading Skeleton or Empty State later */}
-            </div>
+    // Outer container: Manages vertical layout of Header, Messages, Input
+    // Takes available space, **DOES NOT SCROLL ITSELF**
+    <div className="flex flex-col flex-1 h-full bg-background">
+      {/* Chat Header (Fixed at Top) */}
+      <ChatHeader bot={currentBot} />
+
+      {/* Message List Area (Scrollable Middle Section) */}
+      {/* THIS div handles the scrolling now */}
+      <div className="flex-1 h-full overflow-y-auto scrollbar-hide">
+        {" "}
+        {/* Handles scrolling */}
+        {/* Inner container: Enforces max-width for message bubbles */}
+        <div className="max-w-4xl mx-auto px-4 pt-6 pb-4 md:pt-8 md:pb-6">
+          {" "}
+          {/* Padding adjusted */}
+          <div className="flex flex-col gap-5 md:gap-6">
+            {messages.map((msg) => (
+              <ChatMessage key={msg.id} message={msg} />
+            ))}
+            {/* Add empty div at the end for scrollIntoView reference */}
+            <div ref={messagesEndRef} />
           </div>
-          {/* TODO: Add scroll-to-bottom button later */}
         </div>
-        {/* input area */}
-        <div></div>
       </div>
+
+      {/* Chat Input (Fixed at Bottom) */}
+      <ChatInput onSendMessage={handleSendMessage} isLoading={isBotLoading} />
     </div>
   );
 };

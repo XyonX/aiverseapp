@@ -8,6 +8,7 @@ import TextBubble from "@/components/MessageBubbles/TextBubble";
 import ImageBubble from "@/components/MessageBubbles/ImageBubble";
 import ThinkingBubble from "@/components/MessageBubbles/ThinkingBubble";
 import { ConversationView } from "@/components/ConversationView";
+import ConversationArea from "@/components/final/ConversationArea";
 
 import {
   Send,
@@ -56,6 +57,7 @@ import {
 } from "@/components/ui/popover";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import DiscoverView from "@/components/DiscoverView";
 // Sample emojis for the emoji picker
 const sampleEmojis = [
   "😀",
@@ -208,11 +210,11 @@ const NewChatPage = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  //effect to scroll to chatbottom
-  useEffect(() => {
-    // Scroll to the bottom of the chat container whenever messages update
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  // //effect to scroll to chatbottom
+  // useEffect(() => {
+  //   // Scroll to the bottom of the chat container whenever messages update
+  //   bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  // }, [messages]);
 
   const BACKEND_URL =
     process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
@@ -470,11 +472,7 @@ const NewChatPage = () => {
   };
 
   if (!selectedAIContact) {
-    return (
-      <div className="text-center text-gray-500 dark:text-neutral-400">
-        Loading...
-      </div>
-    );
+    router.push("/chat");
   }
 
   //message utility functioon
@@ -493,233 +491,234 @@ const NewChatPage = () => {
 
   // return <ConversationView bot={selectedAIContact} />;
   return (
-    <div className="flex h-full flex-col overflow-hidden">
-      {/* Conversation header - Fixed at the top */}
-      <div className="flex items-center justify-between border-b p-4 sticky top-0 bg-background z-10 left-0 right-0">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden h-8 w-8 mr-1"
-            onClick={() => setSelectedAIContact(null)}
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <Avatar className="h-10 w-10">
-            <AvatarImage
-              src={`${BACKEND_URL}/uploads/${selectedAIContact.avatar}`}
-              alt={selectedAIContact.name}
-            />
-            <AvatarFallback>{selectedAIContact.name.charAt(0)}</AvatarFallback>
-          </Avatar>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-base font-medium">
-                {selectedAIContact.name}
-              </h2>
-              <Button variant="ghost" size="icon" className="h-6 w-6">
-                <Star className="h-3.5 w-3.5" />
-              </Button>
-            </div>
-            <p className="text-xs text-muted-foreground flex items-center">
-              <span
-                className={`mr-1.5 h-2 w-2 rounded-full ${
-                  selectedAIContact.isOnline ? "bg-green-500" : "bg-yellow-500"
-                }`}
-              ></span>
-              {/* {isTyping && bot.status === "online"
-                ? "Typing..."
-                : bot.status === "online"
-                ? "Online"
-                : "Offline"} */}
-              {selectedAIContact.isOnline ? "Online" : "Offline"}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <MessageSquare className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>New Chat</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+    // <div className="flex h-full flex-col overflow-hidden">
+    //   {/* Conversation header - Fixed at the top */}
+    //   <div className="flex items-center justify-between border-b p-4 sticky top-0 bg-background z-10 left-0 right-0">
+    //     <div className="flex items-center gap-3">
+    //       <Button
+    //         variant="ghost"
+    //         size="icon"
+    //         className="md:hidden h-8 w-8 mr-1"
+    //         onClick={() => setSelectedAIContact(null)}
+    //       >
+    //         <ArrowLeft className="h-4 w-4" />
+    //       </Button>
+    //       <Avatar className="h-10 w-10">
+    //         <AvatarImage
+    //           src={`${BACKEND_URL}/uploads/${selectedAIContact.avatar}`}
+    //           alt={selectedAIContact.name}
+    //         />
+    //         <AvatarFallback>{selectedAIContact.name.charAt(0)}</AvatarFallback>
+    //       </Avatar>
+    //       <div>
+    //         <div className="flex items-center gap-2">
+    //           <h2 className="text-base font-medium">
+    //             {selectedAIContact.name}
+    //           </h2>
+    //           <Button variant="ghost" size="icon" className="h-6 w-6">
+    //             <Star className="h-3.5 w-3.5" />
+    //           </Button>
+    //         </div>
+    //         <p className="text-xs text-muted-foreground flex items-center">
+    //           <span
+    //             className={`mr-1.5 h-2 w-2 rounded-full ${
+    //               selectedAIContact.isOnline ? "bg-green-500" : "bg-yellow-500"
+    //             }`}
+    //           ></span>
+    //           {/* {isTyping && bot.status === "online"
+    //             ? "Typing..."
+    //             : bot.status === "online"
+    //             ? "Online"
+    //             : "Offline"} */}
+    //           {selectedAIContact.isOnline ? "Online" : "Offline"}
+    //         </p>
+    //       </div>
+    //     </div>
+    //     <div className="flex items-center gap-2">
+    //       <TooltipProvider>
+    //         <Tooltip>
+    //           <TooltipTrigger asChild>
+    //             <Button variant="ghost" size="icon" className="h-8 w-8">
+    //               <MessageSquare className="h-4 w-4" />
+    //             </Button>
+    //           </TooltipTrigger>
+    //           <TooltipContent>New Chat</TooltipContent>
+    //         </Tooltip>
+    //       </TooltipProvider>
 
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  // onClick={toggleFullscreen}
-                >
-                  <Maximize2 className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Fullscreen</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+    //       <TooltipProvider>
+    //         <Tooltip>
+    //           <TooltipTrigger asChild>
+    //             <Button
+    //               variant="ghost"
+    //               size="icon"
+    //               className="h-8 w-8"
+    //               // onClick={toggleFullscreen}
+    //             >
+    //               <Maximize2 className="h-4 w-4" />
+    //             </Button>
+    //           </TooltipTrigger>
+    //           <TooltipContent>Fullscreen</TooltipContent>
+    //         </Tooltip>
+    //       </TooltipProvider>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>View profile</DropdownMenuItem>
-              <DropdownMenuItem>Clear conversation</DropdownMenuItem>
-              <DropdownMenuItem>Export chat</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Bot settings</DropdownMenuItem>
-              <DropdownMenuItem>Mute notifications</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive">
-                <Trash className="h-4 w-4 mr-2" />
-                Delete chat
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
-      {/* Messages area - Scrollable */}
-      <ScrollArea className="h-[calc(100vh-180px)]">
-        <MessageContainer
-          messages={messages}
-          onBookmark={toggleBookmark}
-          onCopy={copyToClipboard}
-          onRegenerate={regenerateResponse}
-        />
-        {isBotThinking && (
-          <ThinkingBubble
-            userAvatar={user.avatar}
-            botAvatar={selectedAIContact.avatar}
-            sender={"bot"}
-          />
-        )}
-        <div ref={messagesEndRef} />
-      </ScrollArea>
-      {/* Fixed bottom section */}
-      <div className="border-t bg-background sticky bottom-0 z-10">
-        {/* Input area */}
-        <div className="p-4">
-          <div className="flex items-end gap-2">
-            <div className="relative flex-1">
-              <Textarea
-                placeholder="Type a message..."
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSendMessage();
-                  }
-                }}
-                className="min-h-[80px] resize-none pr-10 py-3 pl-3"
-                disabled={isRecording}
-              />
-              <div className="absolute bottom-2 right-2 flex items-center gap-1">
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileChange}
-                  className="hidden"
-                  multiple
-                />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 rounded-full"
-                  onClick={handleFileUpload}
-                  disabled={isRecording}
-                >
-                  <Paperclip className="h-4 w-4" />
-                </Button>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 rounded-full"
-                      disabled={isRecording}
-                    >
-                      <Smile className="h-4 w-4" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent
-                    className="w-64 p-2"
-                    align="end"
-                    alignOffset={-40}
-                  >
-                    <Tabs defaultValue="emoji">
-                      <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="emoji">Emoji</TabsTrigger>
-                        <TabsTrigger value="stickers">Stickers</TabsTrigger>
-                      </TabsList>
-                      <TabsContent value="emoji" className="mt-2">
-                        <div className="grid grid-cols-8 gap-1">
-                          {sampleEmojis.map((emoji, index) => (
-                            <Button
-                              key={index}
-                              variant="ghost"
-                              className="h-7 w-7 p-0"
-                              onClick={() => setMessage((prev) => prev + emoji)}
-                            >
-                              {emoji}
-                            </Button>
-                          ))}
-                        </div>
-                      </TabsContent>
-                      <TabsContent value="stickers" className="mt-2">
-                        <div className="grid grid-cols-3 gap-2">
-                          {[1, 2, 3, 4, 5, 6].map((i) => (
-                            <div
-                              key={i}
-                              className="aspect-square rounded-md bg-muted flex items-center justify-center"
-                            >
-                              <Image className="h-6 w-6 text-muted-foreground" />
-                            </div>
-                          ))}
-                        </div>
-                      </TabsContent>
-                    </Tabs>
-                  </PopoverContent>
-                </Popover>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className={cn(
-                    "h-8 w-8 rounded-full",
-                    isRecording && "text-red-500"
-                  )}
-                  onClick={toggleRecording}
-                >
-                  <Mic className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-            {isGenerating ? (
-              <Button variant="destructive" onClick={handleStopGenerating}>
-                <StopCircle className="mr-2 h-4 w-4" />
-                Stop
-              </Button>
-            ) : (
-              <Button
-                onClick={handleSendMessage}
-                disabled={!message.trim() && files.length === 0 && !isRecording}
-              >
-                <Send className="mr-2 h-4 w-4" />
-                Send
-              </Button>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
+    //       <DropdownMenu>
+    //         <DropdownMenuTrigger asChild>
+    //           <Button variant="ghost" size="icon" className="h-8 w-8">
+    //             <MoreVertical className="h-4 w-4" />
+    //           </Button>
+    //         </DropdownMenuTrigger>
+    //         <DropdownMenuContent align="end">
+    //           <DropdownMenuItem>View profile</DropdownMenuItem>
+    //           <DropdownMenuItem>Clear conversation</DropdownMenuItem>
+    //           <DropdownMenuItem>Export chat</DropdownMenuItem>
+    //           <DropdownMenuSeparator />
+    //           <DropdownMenuItem>Bot settings</DropdownMenuItem>
+    //           <DropdownMenuItem>Mute notifications</DropdownMenuItem>
+    //           <DropdownMenuSeparator />
+    //           <DropdownMenuItem className="text-destructive">
+    //             <Trash className="h-4 w-4 mr-2" />
+    //             Delete chat
+    //           </DropdownMenuItem>
+    //         </DropdownMenuContent>
+    //       </DropdownMenu>
+    //     </div>
+    //   </div>
+    //   {/* Messages area - Scrollable */}
+    //   <ScrollArea className="h-[calc(100vh-180px)]">
+    //     <MessageContainer
+    //       messages={messages}
+    //       onBookmark={toggleBookmark}
+    //       onCopy={copyToClipboard}
+    //       onRegenerate={regenerateResponse}
+    //     />
+    //     {isBotThinking && (
+    //       <ThinkingBubble
+    //         userAvatar={user.avatar}
+    //         botAvatar={selectedAIContact.avatar}
+    //         sender={"bot"}
+    //       />
+    //     )}
+    //     <div ref={messagesEndRef} />
+    //   </ScrollArea>
+    //   {/* Fixed bottom section */}
+    //   <div className="border-t bg-background sticky bottom-0 z-10">
+    //     {/* Input area */}
+    //     <div className="p-4">
+    //       <div className="flex items-end gap-2">
+    //         <div className="relative flex-1">
+    //           <Textarea
+    //             placeholder="Type a message..."
+    //             value={message}
+    //             onChange={(e) => setMessage(e.target.value)}
+    //             onKeyDown={(e) => {
+    //               if (e.key === "Enter" && !e.shiftKey) {
+    //                 e.preventDefault();
+    //                 handleSendMessage();
+    //               }
+    //             }}
+    //             className="min-h-[80px] resize-none pr-10 py-3 pl-3"
+    //             disabled={isRecording}
+    //           />
+    //           <div className="absolute bottom-2 right-2 flex items-center gap-1">
+    //             <input
+    //               type="file"
+    //               ref={fileInputRef}
+    //               onChange={handleFileChange}
+    //               className="hidden"
+    //               multiple
+    //             />
+    //             <Button
+    //               variant="ghost"
+    //               size="icon"
+    //               className="h-8 w-8 rounded-full"
+    //               onClick={handleFileUpload}
+    //               disabled={isRecording}
+    //             >
+    //               <Paperclip className="h-4 w-4" />
+    //             </Button>
+    //             <Popover>
+    //               <PopoverTrigger asChild>
+    //                 <Button
+    //                   variant="ghost"
+    //                   size="icon"
+    //                   className="h-8 w-8 rounded-full"
+    //                   disabled={isRecording}
+    //                 >
+    //                   <Smile className="h-4 w-4" />
+    //                 </Button>
+    //               </PopoverTrigger>
+    //               <PopoverContent
+    //                 className="w-64 p-2"
+    //                 align="end"
+    //                 alignOffset={-40}
+    //               >
+    //                 <Tabs defaultValue="emoji">
+    //                   <TabsList className="grid w-full grid-cols-2">
+    //                     <TabsTrigger value="emoji">Emoji</TabsTrigger>
+    //                     <TabsTrigger value="stickers">Stickers</TabsTrigger>
+    //                   </TabsList>
+    //                   <TabsContent value="emoji" className="mt-2">
+    //                     <div className="grid grid-cols-8 gap-1">
+    //                       {sampleEmojis.map((emoji, index) => (
+    //                         <Button
+    //                           key={index}
+    //                           variant="ghost"
+    //                           className="h-7 w-7 p-0"
+    //                           onClick={() => setMessage((prev) => prev + emoji)}
+    //                         >
+    //                           {emoji}
+    //                         </Button>
+    //                       ))}
+    //                     </div>
+    //                   </TabsContent>
+    //                   <TabsContent value="stickers" className="mt-2">
+    //                     <div className="grid grid-cols-3 gap-2">
+    //                       {[1, 2, 3, 4, 5, 6].map((i) => (
+    //                         <div
+    //                           key={i}
+    //                           className="aspect-square rounded-md bg-muted flex items-center justify-center"
+    //                         >
+    //                           <Image className="h-6 w-6 text-muted-foreground" />
+    //                         </div>
+    //                       ))}
+    //                     </div>
+    //                   </TabsContent>
+    //                 </Tabs>
+    //               </PopoverContent>
+    //             </Popover>
+    //             <Button
+    //               variant="ghost"
+    //               size="icon"
+    //               className={cn(
+    //                 "h-8 w-8 rounded-full",
+    //                 isRecording && "text-red-500"
+    //               )}
+    //               onClick={toggleRecording}
+    //             >
+    //               <Mic className="h-4 w-4" />
+    //             </Button>
+    //           </div>
+    //         </div>
+    //         {isGenerating ? (
+    //           <Button variant="destructive" onClick={handleStopGenerating}>
+    //             <StopCircle className="mr-2 h-4 w-4" />
+    //             Stop
+    //           </Button>
+    //         ) : (
+    //           <Button
+    //             onClick={handleSendMessage}
+    //             disabled={!message.trim() && files.length === 0 && !isRecording}
+    //           >
+    //             <Send className="mr-2 h-4 w-4" />
+    //             Send
+    //           </Button>
+    //         )}
+    //       </div>
+    //     </div>
+    //   </div>
+    // </div>
+    <ConversationArea />
   );
 };
 
