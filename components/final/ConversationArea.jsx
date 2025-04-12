@@ -157,7 +157,7 @@ const ConversationArea = ({
   return (
     // Outer container: Manages vertical layout of Header, Messages, Input
     // Takes available space, **DOES NOT SCROLL ITSELF**
-    <div className="flex flex-col flex-1 h-full bg-background">
+    <div className="flex flex-col h-full bg-background">
       {/* Chat Header (Fixed at Top) */}
       <ChatHeader bot={currentBot} />
 

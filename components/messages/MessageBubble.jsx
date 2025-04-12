@@ -1,7 +1,6 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { MessageActions } from "./MessageActions";
-import { MessageTimestamp } from "./MessageTimestamp";
 import { Bookmark } from "lucide-react";
 
 export function MessageBubble({
@@ -19,58 +18,82 @@ export function MessageBubble({
   className,
   textToCopy,
 }) {
+  const senderName = role === "user" ? "You" : "Assistant";
+  const senderInitial = senderName.substring(0, 1);
+  const senderRowAlignment = role === "user" ? "flex-row-reverse" : "";
+
   return (
     <div
       className={cn(
-        "flex group",
-        role === "user" ? "justify-end" : "justify-start",
+        "flex flex-col group",
+        role === "user" ? "items-end" : "items-start",
         className
       )}
     >
+      {/* Sender Info Row */}
+      <div className={`flex items-center gap-2 ${senderRowAlignment} mb-1`}>
+        <div className="flex-shrink-0 h-6 w-6 rounded-full bg-muted border border-border/50 flex items-center justify-center text-muted-foreground text-xs">
+          {senderInitial}
+        </div>
+        <span className="text-xs text-muted-foreground">{senderName}</span>
+        <span className="text-xs text-muted-foreground/60">{timestamp}</span>
+      </div>
+
+      {/* Bubble Container */}
       <div
-        className={cn(
-          "max-w-[85%] md:max-w-[75%] rounded-lg p-4 relative",
-          role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
-        )}
+        className={`flex max-w-full ${
+          role === "user" ? "justify-end" : "justify-start"
+        }`}
       >
-        {/* Bookmark indicator */}
-        {isBookmarked && (
-          <div className="absolute -top-2 -right-2 text-yellow-500">
-            <Bookmark className="h-4 w-4 fill-current" />
+        <div
+          className={cn(
+            "max-w-[100%] md:max-w-2xl py-2 px-4 rounded-lg relative",
+            role === "user"
+              ? "bg-chat-bubble-outgoing text-chat-bubble-outgoing-foreground rounded-tr-none"
+              : "bg-chat-bubble-incoming text-chat-bubble-incoming-foreground rounded-tl-none",
+            "shadow-sm transition-colors duration-150"
+          )}
+        >
+          {/* Bookmark indicator */}
+          {isBookmarked && (
+            <div className="absolute -top-2 -right-2 text-yellow-500">
+              <Bookmark className="h-4 w-4 fill-current" />
+            </div>
+          )}
+
+          {/* Message content */}
+          <div className="prose prose-sm dark:prose-invert max-w-none prose-p:my-1 prose-pre:my-2">
+            <p className="whitespace-pre-wrap break-words">{content}</p>
           </div>
-        )}
 
-        {/* Message content */}
-        {content}
+          {/* Message reactions */}
+          {reactions?.length > 0 && (
+            <div className="mt-1 flex flex-wrap gap-1">
+              {reactions.map((emoji, index) => (
+                <span
+                  key={index}
+                  className="inline-flex items-center justify-center rounded-full bg-background px-1.5 py-0.5 text-xs"
+                >
+                  {emoji}
+                </span>
+              ))}
+            </div>
+          )}
 
-        {/* Message reactions */}
-        {reactions && reactions.length > 0 && (
-          <div className="mt-1 flex flex-wrap gap-1">
-            {reactions.map((emoji, index) => (
-              <span
-                key={index}
-                className="inline-flex items-center justify-center rounded-full bg-background px-1.5 py-0.5 text-xs"
-              >
-                {emoji}
-              </span>
-            ))}
+          {/* Message actions */}
+          <div className="mt-1 flex gap-1 md:opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+            <MessageActions
+              id={id}
+              role={role}
+              isBookmarked={isBookmarked}
+              onBookmark={onBookmark}
+              onReaction={onReaction}
+              onCopy={onCopy}
+              onRegenerate={onRegenerate}
+              textToCopy={textToCopy}
+            />
           </div>
-        )}
-
-        {/* Message actions */}
-        <MessageActions
-          id={id}
-          role={role}
-          isBookmarked={isBookmarked}
-          onBookmark={onBookmark}
-          onReaction={onReaction}
-          onCopy={onCopy}
-          onRegenerate={onRegenerate}
-          textToCopy={textToCopy}
-        />
-
-        {/* Message timestamp */}
-        <MessageTimestamp timestamp={timestamp} role={role} />
+        </div>
       </div>
     </div>
   );

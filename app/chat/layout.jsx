@@ -346,6 +346,12 @@ export default function ChatLayout({ children }) {
         >
           <DetailView />
         </div>
+        {/* Conversation Area */}
+        {!isMobile && selectedAIContact && (
+          <div className="flex-1 h-full overflow-hidden bg-background">
+            {children}
+          </div>
+        )}
       </main>
     </SidebarProvider>
   );
