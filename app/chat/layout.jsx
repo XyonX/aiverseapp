@@ -335,7 +335,7 @@ export default function ChatLayout({ children }) {
     <SidebarProvider>
       <main className="flex flex-row h-screen w-screen">
         {/* Navigation Pane - Full height + fixed width */}
-        <NavigationPane className="h-full w-[60px] md:w-[60px]" />
+        <NavigationPane className="h-full w-[45px] md:w-[60px]" />
         {/* Detail View */}
         <div
           className={` h-full ${

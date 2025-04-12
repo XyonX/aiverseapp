@@ -40,7 +40,7 @@ const ChatMessage = ({ message }) => {
         {/* The Actual Chat Bubble */}
         <div
           className={`
-                        max-w-xl md:max-w-2xl   /* MAX WIDTH FOR THE BUBBLE ITSELF */
+                        max-w-[100%] md:max-w-2xl   /* MAX WIDTH FOR THE BUBBLE ITSELF */
                         py-2 px-4              /* Padding inside bubble */
                         rounded-lg             /* Base rounding */
                         ${bubbleSpecificRadius} /* Specific corner flattening */
