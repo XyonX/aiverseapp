@@ -333,26 +333,20 @@ export default function ChatLayout({ children }) {
 
   return (
     <SidebarProvider>
-      <div className="flex flex-row h-screen w-full">
-        {/* Always visible navigation pane */}
-        <NavigationPane />
-
-        {/* Detail view - always shown on mobile, or on desktop when no chat is selected */}
+      <main className="flex flex-row h-screen w-screen">
+        {/* Navigation Pane - Full height + fixed width */}
+        <NavigationPane className="h-full w-[60px] md:w-[60px]" />
+        {/* Detail View */}
         <div
-          className={`${
-            isMobile ? "flex-1" : "w-[350px] border-r border-border"
-          }`}
+          className={` h-full ${
+            isMobile
+              ? "flex-1 min-w-0"
+              : "w-[350px] flex-shrink-0 border-r border-border"
+          } `}
         >
           <DetailView />
         </div>
-
-        {/* Main content area - only shown on desktop when a chat is selected */}
-        {!isMobile && selectedAIContact && (
-          <div className="flex-grow h-screen overflow-hidden relative bg-white dark:bg-neutral-900">
-            {children}
-          </div>
-        )}
-      </div>
+      </main>
     </SidebarProvider>
   );
 }

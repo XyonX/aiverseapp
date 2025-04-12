@@ -192,7 +192,7 @@ const DetailView = () => {
   };
 
   return (
-    <Sidebar collapsible="none" className="flex-1 w-full overflow-hidden">
+    <Sidebar collapsible="none" className="h-full w-full flex flex-col ">
       {renderTabContent()}
     </Sidebar>
   );

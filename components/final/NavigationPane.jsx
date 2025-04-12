@@ -46,7 +46,7 @@ const data = {
   ],
 };
 
-const NavigationPane = () => {
+const NavigationPane = ({ className }) => {
   const { changeTab, activeTab, setSelectedAIContact } = useAppContext();
   const { setOpen } = useSidebar();
   const [mounted, setMounted] = useState(false);
@@ -64,35 +64,41 @@ const NavigationPane = () => {
   return (
     <Sidebar
       collapsible="none"
-      className={`border-r ${
-        isMobile ? "!w-[60px]" : "!w-[calc(var(--sidebar-width-icon)_+_1px)]"
-      }`}
+      className={`border-r flex-shrink-0 ${className}`}
     >
-      <SidebarHeader className={isMobile ? "p-2" : ""}>
+      {/* Header */}
+      <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
               size="lg"
               asChild
-              className={`md:h-8 md:p-0 ${
-                isMobile ? "justify-center p-0" : ""
-              }`}
+              tooltip={{
+                children: (
+                  <div className="space-y-1">
+                    <p className="font-semibold">ChatBot</p>
+                    <p className="text-xs text-muted-foreground">
+                      AI Messenger
+                    </p>
+                  </div>
+                ),
+                hidden: false,
+                side: "right",
+                sideOffset: 10,
+              }}
+              className="justify-center p-0 md:justify-center md:p-2"
             >
               <a href="#">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                   <Command className="size-4" />
                 </div>
-                {!isMobile && (
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">ChatBot</span>
-                    <span className="truncate text-xs">AI Messenger</span>
-                  </div>
-                )}
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
+
+      {/* Content */}
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent className="px-1.5 md:px-0">
@@ -103,6 +109,8 @@ const NavigationPane = () => {
                     tooltip={{
                       children: item.title,
                       hidden: false,
+                      side: "right",
+                      sideOffset: 10,
                     }}
                     onClick={() => {
                       changeTab(item.title);
@@ -110,12 +118,9 @@ const NavigationPane = () => {
                       setSelectedAIContact(null);
                     }}
                     isActive={activeTab === item.title}
-                    className={`${
-                      isMobile ? "justify-center px-0" : "px-2.5 md:px-2"
-                    }`}
+                    className="justify-center px-0 md:justify-center md:px-2" // Keep centered
                   >
                     <item.icon />
-                    {!isMobile && <span>{item.title}</span>}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -123,14 +128,14 @@ const NavigationPane = () => {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      {/* Footer */}
       <SidebarFooter>
-        <div
-          className={`${isMobile ? "px-0" : "px-2"} py-1 flex justify-center`}
-        >
+        <div className="px-0 py-1 flex justify-center md:px-2">
           <ThemeToggle />
         </div>
         <Separator className="my-1" />
-        <NavUser user={data.user} isMobile={isMobile} />
+        <NavUser user={data.user} />
       </SidebarFooter>
     </Sidebar>
   );
