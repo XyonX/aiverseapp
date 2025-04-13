@@ -195,6 +195,7 @@ const ConversationArea = () => {
   const [dropdownOpen, setDropdownOpen] = useState(null);
 
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   const [files, setFiles] = useState([]);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
@@ -202,6 +203,8 @@ const ConversationArea = () => {
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
   const containerRef = useRef(null);
+  //for cleanup
+  const abortControllerRef = useRef();
 
   // Auto-scroll to bottom when messages change
   React.useEffect(() => {
@@ -244,7 +247,22 @@ const ConversationArea = () => {
     }
   };
 
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
+
   const handleSendMessage = async () => {
+    // At start of function
+    if (isSending) return;
+    setIsSending(true);
+
+    // In handleSendMessage
+    abortControllerRef.current = new AbortController();
+
     //error check
     if (!selectedAIContact && !user) {
       console.log("select bot or login");
@@ -274,7 +292,7 @@ const ConversationArea = () => {
         }
       );
       setConversation(convResponse.data);
-      convId = conversation._id;
+      convId = convResponse.data._id;
       console.log("[Message Sender] New conversation created with ID:", convId);
     } else {
       console.log("[Message Sender] Using existing conversation ID:", convId);
@@ -321,6 +339,7 @@ const ConversationArea = () => {
         method: "POST",
         body: formData,
         credentials: "include",
+        signal: abortControllerRef.current.signal,
       });
 
       if (!response.ok || !response.body) {
@@ -406,6 +425,9 @@ const ConversationArea = () => {
             }
           } catch (error) {
             console.error("[Mock Stream] Error processing event:", error);
+          } finally {
+            // In finally block
+            setIsSending(false);
           }
         }
       }
@@ -487,17 +509,20 @@ const ConversationArea = () => {
   return (
     <div className="flex h-full flex-col overflow-hidden">
       {/* Conversation header - Fixed at the top */}
-      <div className="flex items-center justify-between border-b p-4 sticky top-0 bg-background z-10 left-0 right-0">
+      <div className="flex items-center justify-between border-b p-2 sticky top-0 bg-background z-10 left-0 right-0">
         <div className="flex items-center gap-3">
+          {/* Optional Back Button - uncomment if needed, adjust size */}
           {/* <Button
             variant="ghost"
             size="icon"
-            className="md:hidden h-8 w-8 mr-1"
+            className="md:hidden h-8 w-8 mr-1" // Match other icon button sizes
             onClick={() => setSelectedAIContact(null)}
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-4 w-4" /> // Match other icon sizes
           </Button> */}
-          <Avatar className="h-10 w-10">
+
+          {/* --- ADJUSTED AVATAR SIZE: h-10 w-10 -> h-8 w-8 --- */}
+          <Avatar className="h-8 w-8">
             <AvatarImage
               src={`${BACKEND_URL}/uploads/${selectedAIContact.avatar}`}
               alt={selectedAIContact.name}
@@ -505,30 +530,34 @@ const ConversationArea = () => {
             <AvatarFallback>{selectedAIContact.name.charAt(0)}</AvatarFallback>
           </Avatar>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
+              {" "}
+              {/* Reduced gap slightly */}
+              {/* Kept text-base, could adjust to text-sm if needed */}
               <h2 className="text-base font-medium">
                 {selectedAIContact.name}
               </h2>
-              <Button variant="ghost" size="icon" className="h-6 w-6">
-                <Star className="h-3.5 w-3.5" />
+              {/* --- ADJUSTED STAR BUTTON/ICON SIZE --- */}
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                {" "}
+                {/* size-8 */}
+                <Star className="h-4 w-4" /> {/* size-4 */}
               </Button>
             </div>
             <p className="text-xs text-muted-foreground flex items-center">
               <span
                 className={`mr-1.5 h-2 w-2 rounded-full ${
-                  selectedAIContact.isOnline ? "bg-green-500" : "bg-yellow-500"
+                  selectedAIContact.isOnline ? "bg-green-500" : "bg-yellow-500" // Consider using theme colors if available e.g., bg-success, bg-warning
                 }`}
               ></span>
-              {/* {isTyping && bot.status === "online"
-                ? "Typing..."
-                : bot.status === "online"
-                ? "Online"
-                : "Offline"} */}
               {selectedAIContact.isOnline ? "Online" : "Offline"}
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        {/* Right side icons - Already consistent (h-8 w-8 button, h-4 w-4 icon) */}
+        <div className="flex items-center gap-1">
+          {" "}
+          {/* Reduced gap slightly */}
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -539,23 +568,16 @@ const ConversationArea = () => {
               <TooltipContent>New Chat</TooltipContent>
             </Tooltip>
           </TooltipProvider>
-
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  // onClick={toggleFullscreen}
-                >
+                <Button variant="ghost" size="icon" className="h-8 w-8">
                   <Maximize2 className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Fullscreen</TooltipContent>
             </Tooltip>
           </TooltipProvider>
-
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -570,7 +592,9 @@ const ConversationArea = () => {
               <DropdownMenuItem>Bot settings</DropdownMenuItem>
               <DropdownMenuItem>Mute notifications</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive">
+              <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10">
+                {" "}
+                {/* Added focus styles */}
                 <Trash className="h-4 w-4 mr-2" />
                 Delete chat
               </DropdownMenuItem>
@@ -579,27 +603,10 @@ const ConversationArea = () => {
         </div>
       </div>
       {/* Messages area - Scrollable */}
-      {/* <ScrollArea className="flex-1">
-        <MessageContainer
-          messages={messages}
-          onBookmark={toggleBookmark}
-          onCopy={copyToClipboard}
-          onRegenerate={regenerateResponse}
-        />
-        {isBotThinking && (
-          <ThinkingBubble
-            userAvatar={user.avatar}
-            botAvatar={selectedAIContact.avatar}
-            sender={"bot"}
-          />
-        )}
-        <div ref={messagesEndRef} />
-      </ScrollArea> */}
       <div className="flex-1 h-full overflow-y-auto scrollbar-hide">
-        {" "}
         {/* Handles scrolling */}
         {/* Inner container: Enforces max-width for message bubbles */}
-        <div className="max-w-4xl mx-auto px-4 pt-6 pb-4 md:pt-8 md:pb-6">
+        <div className="max-w-4xl mx-auto px-4 pt-4 pb-4 md:pt-6 md:pb-6">
           {/* Padding adjusted */}
           <MessageContainer
             messages={messages}
@@ -618,69 +625,90 @@ const ConversationArea = () => {
         </div>
       </div>
       {/* Fixed bottom section */}
-      <div className="border-t bg-background sticky bottom-0 z-10">
+      {/* --- ADJUSTED PADDING: p-4 -> p-2 --- */}
+      <div className="border-t bg-background sticky bottom-0 z-10 p-2">
         {/* Input area */}
-        <div className="p-4">
-          <div className="flex items-end gap-2">
-            <div className="relative flex-1">
-              <Textarea
-                placeholder="Type a message..."
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSendMessage();
-                  }
-                }}
-                className="min-h-[80px] resize-none pr-10 py-3 pl-3"
-                disabled={isRecording}
+        <div className="flex items-end gap-2">
+          {" "}
+          {/* Keep gap-2 for spacing between textarea and button */}
+          <div className="relative flex-1">
+            <Textarea
+              placeholder="Type a message..."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
+              // --- ADJUSTED PADDING: py-3 pl-3 -> py-2 pl-2 ---
+              // --- CONSIDER ADJUSTING MIN-HEIGHT ---
+              className="min-h-[72px] resize-none pr-10 py-2 pl-2 text-sm" // Added text-sm for potentially smaller input text
+              disabled={isRecording}
+              rows={1} // Start with 1 row, auto-expands
+            />
+            {/* Input Action Icons - Already consistent (h-8 w-8 button, h-4 w-4 icon) */}
+            <div className="absolute bottom-1 right-1 flex items-center gap-0.5">
+              {" "}
+              {/* Adjusted position and gap */}
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                className="hidden"
+                multiple
               />
-              <div className="absolute bottom-2 right-2 flex items-center gap-1">
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileChange}
-                  className="hidden"
-                  multiple
-                />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 rounded-full"
-                  onClick={handleFileUpload}
-                  disabled={isRecording}
-                >
-                  <Paperclip className="h-4 w-4" />
-                </Button>
-                <Popover>
-                  <PopoverTrigger asChild>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
                     <Button
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8 rounded-full"
+                      onClick={handleFileUpload}
                       disabled={isRecording}
                     >
-                      <Smile className="h-4 w-4" />
+                      <Paperclip className="h-4 w-4" />
                     </Button>
-                  </PopoverTrigger>
-                  <PopoverContent
-                    className="w-64 p-2"
-                    align="end"
-                    alignOffset={-40}
+                  </TooltipTrigger>
+                  <TooltipContent>Attach files</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 rounded-full"
+                    disabled={isRecording}
                   >
-                    <Tabs defaultValue="emoji">
+                    <Smile className="h-4 w-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent
+                  className="w-auto p-0 border-none shadow-none mb-2" // Make popover less intrusive
+                  align="end"
+                  // alignOffset={-40} // May need adjustment
+                >
+                  {/* Use a dedicated Emoji Picker component here for better UX */}
+                  {/* Example placeholder: */}
+                  <div className="p-2 bg-popover border rounded-lg shadow-lg">
+                    <Tabs defaultValue="emoji" className="w-64">
                       <TabsList className="grid w-full grid-cols-2">
                         <TabsTrigger value="emoji">Emoji</TabsTrigger>
                         <TabsTrigger value="stickers">Stickers</TabsTrigger>
                       </TabsList>
-                      <TabsContent value="emoji" className="mt-2">
+                      <TabsContent
+                        value="emoji"
+                        className="mt-2 max-h-40 overflow-y-auto scrollbar-hide"
+                      >
                         <div className="grid grid-cols-8 gap-1">
                           {sampleEmojis.map((emoji, index) => (
                             <Button
                               key={index}
                               variant="ghost"
-                              className="h-7 w-7 p-0"
+                              className="h-7 w-7 p-0 rounded-full"
                               onClick={() => setMessage((prev) => prev + emoji)}
                             >
                               {emoji}
@@ -693,7 +721,8 @@ const ConversationArea = () => {
                           {[1, 2, 3, 4, 5, 6].map((i) => (
                             <div
                               key={i}
-                              className="aspect-square rounded-md bg-muted flex items-center justify-center"
+                              className="aspect-square rounded-md bg-muted flex items-center justify-center cursor-pointer hover:bg-accent"
+                              // onClick={() => handleSendSticker(i)} // Placeholder
                             >
                               <Image className="h-6 w-6 text-muted-foreground" />
                             </div>
@@ -701,36 +730,56 @@ const ConversationArea = () => {
                         </div>
                       </TabsContent>
                     </Tabs>
-                  </PopoverContent>
-                </Popover>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className={cn(
-                    "h-8 w-8 rounded-full",
-                    isRecording && "text-red-500"
-                  )}
-                  onClick={toggleRecording}
-                >
-                  <Mic className="h-4 w-4" />
-                </Button>
-              </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={cn(
+                        "h-8 w-8 rounded-full",
+                        isRecording && "text-red-500 bg-red-500/10" // Added background on record
+                      )}
+                      onClick={toggleRecording}
+                    >
+                      <Mic className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {isRecording ? "Stop recording" : "Record audio"}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
-            {isGenerating ? (
-              <Button variant="destructive" onClick={handleStopGenerating}>
-                <StopCircle className="mr-2 h-4 w-4" />
-                Stop
-              </Button>
-            ) : (
-              <Button
-                onClick={handleSendMessage}
-                disabled={!message.trim() && files.length === 0 && !isRecording}
-              >
-                <Send className="mr-2 h-4 w-4" />
-                Send
-              </Button>
-            )}
           </div>
+          {/* Send/Stop Button */}
+          {isGenerating ? (
+            <Button
+              variant="destructive"
+              onClick={handleStopGenerating}
+              size="icon"
+              className="h-auto aspect-square p-3 self-end"
+            >
+              {" "}
+              {/* Made Stop button square */}
+              <StopCircle className="h-5 w-5" /> {/* Slightly larger icon */}
+              <span className="sr-only">Stop Generating</span>{" "}
+              {/* Screen reader text */}
+            </Button>
+          ) : (
+            <Button
+              onClick={handleSendMessage}
+              disabled={!message.trim() && files.length === 0 && !isRecording}
+              size="icon" // Make send button icon-sized when text area is small
+              className="h-auto aspect-square p-3 self-end" // Align with textarea bottom, make square
+            >
+              <Send className="h-5 w-5" /> {/* Slightly larger icon */}
+              <span className="sr-only">Send</span> {/* Screen reader text */}
+            </Button>
+          )}
         </div>
       </div>
     </div>

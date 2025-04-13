@@ -199,6 +199,14 @@ module.exports = {
           },
         },
       }),
+      spacing: {
+        "sidebar-icon": "2rem", // 32px for icon containers
+        "header-height": "4rem", // 64px for header heights
+      },
+      sizes: {
+        avatar: "2rem", // 32px for avatar/logo consistency
+        "header-icon": "1.5rem", // 24px for header icons
+      },
     },
   },
   plugins: [
