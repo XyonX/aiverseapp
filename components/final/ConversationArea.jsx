@@ -194,8 +194,6 @@ const ConversationArea = () => {
   const [videoModalOpen, setVideoModalOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(null);
 
-  const bottomRef = useRef(null);
-
   const [isGenerating, setIsGenerating] = useState(false);
   const [files, setFiles] = useState([]);
   const [isRecording, setIsRecording] = useState(false);
@@ -209,12 +207,6 @@ const ConversationArea = () => {
   React.useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
-
-  // //effect to scroll to chatbottom
-  // useEffect(() => {
-  //   // Scroll to the bottom of the chat container whenever messages update
-  //   bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  // }, [messages]);
 
   const BACKEND_URL =
     process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
@@ -490,19 +482,21 @@ const ConversationArea = () => {
   };
 
   // return <ConversationView bot={selectedAIContact} />;
+
+  //conversation area
   return (
     <div className="flex h-full flex-col overflow-hidden">
       {/* Conversation header - Fixed at the top */}
       <div className="flex items-center justify-between border-b p-4 sticky top-0 bg-background z-10 left-0 right-0">
         <div className="flex items-center gap-3">
-          <Button
+          {/* <Button
             variant="ghost"
             size="icon"
             className="md:hidden h-8 w-8 mr-1"
             onClick={() => setSelectedAIContact(null)}
           >
             <ArrowLeft className="h-4 w-4" />
-          </Button>
+          </Button> */}
           <Avatar className="h-10 w-10">
             <AvatarImage
               src={`${BACKEND_URL}/uploads/${selectedAIContact.avatar}`}

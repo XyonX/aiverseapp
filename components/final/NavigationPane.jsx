@@ -61,6 +61,7 @@ const NavigationPane = ({ className }) => {
 
   if (!mounted) return null;
 
+  //navigationpane
   return (
     <Sidebar
       collapsible="none"
