@@ -47,7 +47,7 @@ const data = {
 };
 
 const NavigationPane = ({ className }) => {
-  const { changeTab, activeTab, setSelectedAIContact } = useAppContext();
+  const { changeTab, activeTab, setSelectedAIContact, user } = useAppContext();
   const { setOpen } = useSidebar();
   const [mounted, setMounted] = useState(false);
 
@@ -136,7 +136,9 @@ const NavigationPane = ({ className }) => {
           <ThemeToggle />
         </div>
         <Separator className="my-1" />
-        <NavUser user={data.user} />
+        <div className="px-0 py-1 flex justify-center md:px-2">
+          <NavUser user={user} />
+        </div>
       </SidebarFooter>
     </Sidebar>
   );
