@@ -340,16 +340,16 @@ export default function ChatLayout({ children }) {
         <NavigationPane className="h-full w-[45px] md:w-[60px]" />
         {/* Detail View */}
         <div
-          className={` h-full ${
-            isMobile || activeTab == "discover"
+          className={`h-full ${
+            isMobile || activeTab === "discover"
               ? "flex-1 min-w-0"
               : "w-[400px] flex-shrink-0 border-r border-border"
-          } `}
+          }`}
         >
           <DetailView />
         </div>
         {/* Conversation Area */}
-        {!isMobile && !activeTab == "discover" && (
+        {!isMobile && activeTab !== "discover" && (
           <div className="flex-1 h-full overflow-hidden bg-background">
             {children}
           </div>
