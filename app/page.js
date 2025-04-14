@@ -129,9 +129,15 @@ const page = () => {
                     Get Started <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
-                <Button size="lg" variant="outline" className="text-foreground">
-                  Watch Demo
-                </Button>
+                <Link href="/chat">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="text-foreground"
+                  >
+                    Chat
+                  </Button>
+                </Link>
               </div>
               <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                 <div className="flex items-center">
