@@ -14,12 +14,12 @@ import {
 } from "@/components/ui/tooltip";
 
 export default function ChatDemo() {
-  const [activeTab, setActiveTab] = useState("gpt");
+  const [activeTab, setActiveTab] = useState("DeepSeek");
   const [messages, setMessages] = useState({
-    gpt: [
+    DeepSeek: [
       {
         role: "assistant",
-        content: "Hello! I'm GPT. How can I help you today?",
+        content: "Hello! I'm DeepSeek. How can I help you today?",
       },
     ],
     gemini: [
@@ -28,7 +28,7 @@ export default function ChatDemo() {
         content: "Hi there! I'm Gemini. What would you like to know?",
       },
     ],
-    grok: [{ role: "assistant", content: "Hey! I'm Grok. Ask me anything!" }],
+    Qwen: [{ role: "assistant", content: "Hey! I'm Qwen. Ask me anything!" }],
   });
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -58,7 +58,7 @@ export default function ChatDemo() {
     setIsTyping(true);
     setTimeout(() => {
       const responses = {
-        gpt: text.toLowerCase().includes("meditation")
+        DeepSeek: text.toLowerCase().includes("meditation")
           ? "Meditation offers numerous benefits including reduced stress, improved focus, better emotional regulation, and enhanced self-awareness. Regular practice can also help with anxiety management and better sleep quality."
           : text.toLowerCase().includes("quantum")
           ? "Quantum computing uses quantum bits or 'qubits' that can exist in multiple states simultaneously, unlike classical bits. This allows quantum computers to process complex calculations much faster for certain problems, though they're still in early development stages."
@@ -78,7 +78,7 @@ export default function ChatDemo() {
           ? "AI refers to systems that mimic human intelligence broadly. Machine learning is a specific approach to AI where algorithms learn patterns from data and improve over time. In simple terms, all machine learning is AI, but not all AI uses machine learning."
           : "Thanks for asking! Here's what I know about this subject, with some key insights that might help you understand it better.",
 
-        grok: text.toLowerCase().includes("meditation")
+        Qwen: text.toLowerCase().includes("meditation")
           ? "Ah, meditation - where you pay nothing to sit and do nothing, yet somehow it's one of the most valuable things you can do! Benefits include stress reduction, better focus, emotional regulation, and occasionally the ability to tolerate family gatherings with minimal eye-twitching."
           : text.toLowerCase().includes("quantum")
           ? "Quantum computing is like having a teenager - it exists in all possible states until you observe it, then it collapses into the least convenient one. Jokes aside, it uses quantum bits that can be 0, 1, or both simultaneously, enabling certain calculations to be done exponentially faster."
@@ -111,11 +111,11 @@ export default function ChatDemo() {
 
   const getAvatarInfo = (model) => {
     switch (model) {
-      case "gpt":
+      case "DeepSeek":
         return {
           icon: <Sparkles className="h-4 w-4" />,
           color: "bg-green-500",
-          name: "GPT",
+          name: "DeepSeek",
         };
       case "gemini":
         return {
@@ -123,11 +123,11 @@ export default function ChatDemo() {
           color: "bg-blue-500",
           name: "Gemini",
         };
-      case "grok":
+      case "Qwen":
         return {
           icon: <Zap className="h-4 w-4" />,
           color: "bg-purple-500",
-          name: "Grok",
+          name: "Qwen",
         };
       default:
         return {
@@ -141,7 +141,7 @@ export default function ChatDemo() {
   // Auto-suggest after 2 seconds if no interaction
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (messages.gpt.length === 1 && showSuggestion) {
+      if (messages.DeepSeek.length === 1 && showSuggestion) {
         // Do nothing, just show the suggestions
       }
     }, 2000);
@@ -150,21 +150,27 @@ export default function ChatDemo() {
   }, [messages]);
 
   return (
-    <div className="flex flex-col h-[500px]">
-      <Tabs defaultValue="gpt" className="w-full" onValueChange={setActiveTab}>
-        <div className="flex justify-between items-center mb-2">
+    <div className="flex flex-col h-[500px] overflow-hidden">
+      <Tabs
+        defaultValue="DeepSeek"
+        className="w-full h-full"
+        onValueChange={setActiveTab}
+      >
+        {/* header */}
+        <div className="flex justify-between items-center mb-2 sticky top-0 z-10 left-0 right-0">
+          {" "}
           <TabsList>
-            <TabsTrigger value="gpt" className="flex items-center gap-2">
+            <TabsTrigger value="DeepSeek" className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-green-500"></div>
-              GPT
+              DeepSeek
             </TabsTrigger>
             <TabsTrigger value="gemini" className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-blue-500"></div>
               Gemini
             </TabsTrigger>
-            <TabsTrigger value="grok" className="flex items-center gap-2">
+            <TabsTrigger value="Qwen" className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-purple-500"></div>
-              Grok
+              Qwen
             </TabsTrigger>
           </TabsList>
           <TooltipProvider>
@@ -183,57 +189,27 @@ export default function ChatDemo() {
             </Tooltip>
           </TooltipProvider>
         </div>
-
-        <div className="border rounded-lg flex-grow overflow-hidden flex flex-col bg-background">
-          <div className="flex-grow overflow-y-auto p-4 space-y-4">
-            {Object.keys(messages).map((model) => (
-              <TabsContent
-                value={model}
-                className="m-0 h-full flex flex-col space-y-4 data-[state=inactive]:hidden"
-                key={model}
-              >
-                {messages[model].map((message, index) => (
+        {/* message area */}
+        <div className="flex-1 h-full overflow-y-auto p-4 space-y-4 scrollbar-hide">
+          {Object.keys(messages).map((model) => (
+            <TabsContent
+              value={model}
+              className="m-0 h-full flex flex-col space-y-4 data-[state=inactive]:hidden"
+              key={model}
+            >
+              {messages[model].map((message, index) => (
+                <div
+                  key={index}
+                  className={`flex ${
+                    message.role === "user" ? "justify-end" : "justify-start"
+                  }`}
+                >
                   <div
-                    key={index}
-                    className={`flex ${
-                      message.role === "user" ? "justify-end" : "justify-start"
+                    className={`flex gap-3 max-w-[80%] ${
+                      message.role === "user" ? "flex-row-reverse" : ""
                     }`}
                   >
-                    <div
-                      className={`flex gap-3 max-w-[80%] ${
-                        message.role === "user" ? "flex-row-reverse" : ""
-                      }`}
-                    >
-                      {message.role === "assistant" ? (
-                        <Avatar
-                          className={`h-8 w-8 ${
-                            getAvatarInfo(model).color
-                          } text-white`}
-                        >
-                          <AvatarFallback>
-                            {getAvatarInfo(model).icon}
-                          </AvatarFallback>
-                        </Avatar>
-                      ) : (
-                        <Avatar className="h-8 w-8 bg-primary text-white">
-                          <AvatarFallback>U</AvatarFallback>
-                        </Avatar>
-                      )}
-                      <div
-                        className={`rounded-lg p-3 ${
-                          message.role === "user"
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-muted"
-                        }`}
-                      >
-                        {message.content}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                {isTyping && (
-                  <div className="flex justify-start">
-                    <div className="flex gap-3 max-w-[80%]">
+                    {message.role === "assistant" ? (
                       <Avatar
                         className={`h-8 w-8 ${
                           getAvatarInfo(model).color
@@ -243,66 +219,92 @@ export default function ChatDemo() {
                           {getAvatarInfo(model).icon}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="rounded-lg p-3 bg-muted flex items-center space-x-1">
-                        <div className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce"></div>
-                        <div
-                          className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce"
-                          style={{ animationDelay: "0.2s" }}
-                        ></div>
-                        <div
-                          className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce"
-                          style={{ animationDelay: "0.4s" }}
-                        ></div>
-                      </div>
+                    ) : (
+                      <Avatar className="h-8 w-8 bg-primary text-white">
+                        <AvatarFallback>U</AvatarFallback>
+                      </Avatar>
+                    )}
+                    <div
+                      className={`rounded-lg p-3 ${
+                        message.role === "user"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted"
+                      }`}
+                    >
+                      {message.content}
                     </div>
                   </div>
-                )}
-              </TabsContent>
-            ))}
-          </div>
-
-          <div className="p-4 border-t">
-            {showSuggestion && !isTyping && (
-              <div className="mb-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {suggestions.map((suggestion, index) => (
-                  <Button
-                    key={index}
-                    variant="outline"
-                    size="sm"
-                    className="justify-start text-xs text-left h-auto py-2 px-3 whitespace-normal"
-                    onClick={() => handleSend(suggestion)}
-                  >
-                    {suggestion}
-                  </Button>
-                ))}
-              </div>
-            )}
-
-            <div className="flex gap-2">
-              <Input
-                placeholder="Type your message..."
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className="flex-grow"
-              />
-              <Button
-                size="icon"
-                onClick={() => handleSend()}
-                disabled={!input.trim() || isTyping}
-              >
-                <SendIcon className="h-4 w-4" />
-              </Button>
+                </div>
+              ))}
+              {isTyping && (
+                <div className="flex justify-start">
+                  <div className="flex gap-3 max-w-[80%]">
+                    <Avatar
+                      className={`h-8 w-8 ${
+                        getAvatarInfo(model).color
+                      } text-white`}
+                    >
+                      <AvatarFallback>
+                        {getAvatarInfo(model).icon}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="rounded-lg p-3 bg-muted flex items-center space-x-1">
+                      <div className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce"></div>
+                      <div
+                        className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce"
+                        style={{ animationDelay: "0.2s" }}
+                      ></div>
+                      <div
+                        className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce"
+                        style={{ animationDelay: "0.4s" }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+          ))}
+        </div>
+        <div className="border-t bg-background sticky bottom-0 z-10 p-2">
+          {showSuggestion && !isTyping && (
+            <div className="mb-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {suggestions.map((suggestion, index) => (
+                <Button
+                  key={index}
+                  variant="outline"
+                  size="sm"
+                  className="justify-start text-xs text-left h-auto py-2 px-3 whitespace-normal"
+                  onClick={() => handleSend(suggestion)}
+                >
+                  {suggestion}
+                </Button>
+              ))}
             </div>
-            <div className="mt-2 text-xs text-muted-foreground flex justify-between items-center">
-              <div>
-                <span className="font-medium">Active model:</span>{" "}
-                {getAvatarInfo(activeTab).name}
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
-                All models receive your message
-              </div>
+          )}
+          <div className="flex gap-2">
+            <Input
+              placeholder="Type your message..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              className="flex-grow"
+            />
+            <Button
+              size="icon"
+              onClick={() => handleSend()}
+              disabled={!input.trim() || isTyping}
+            >
+              <SendIcon className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="mt-2 text-xs text-muted-foreground flex justify-between items-center">
+            <div>
+              <span className="font-medium">Active model:</span>{" "}
+              {getAvatarInfo(activeTab).name}
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
+              All models receive your message
             </div>
           </div>
         </div>

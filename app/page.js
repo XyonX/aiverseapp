@@ -32,73 +32,86 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Separator } from "@/components/ui/separator";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const page = () => {
   return (
     <div className="flex flex-col min-h-screen ">
       {/* Header */}
-      <header className="border-b sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="border-border/50 sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between px-4 md:px-6">
           <div>
-            <span className="text-xl font-bold">AIverse</span>
+            <span className="text-xl font-bold text-foreground">AIverse</span>
           </div>
           <nav className="hidden md:flex gap-6">
             <Link
               href="#features"
-              className="text-sm font-medium hover:underline"
+              className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors"
             >
               Features
             </Link>
             <Link
               href="#how-it-works"
-              className="text-sm font-medium hover:underline"
+              className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors"
             >
               How It Works
             </Link>
             <Link
               href="#models"
-              className="text-sm font-medium hover:underline"
+              className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors"
             >
               AI Models
             </Link>
             <Link
               href="#pricing"
-              className="text-sm font-medium hover:underline"
+              className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors"
             >
               Pricing
             </Link>
             <Link
               href="#testimonials"
-              className="text-sm font-medium hover:underline"
+              className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors"
             >
               Testimonials
             </Link>
-            <Link href="#faq" className="text-sm font-medium hover:underline">
+            <Link
+              href="#faq"
+              className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors"
+            >
               FAQ
             </Link>
           </nav>
           <div className="flex items-center gap-4">
+            <div className="px-0 py-0 flex justify-center md:px-1">
+              <ThemeToggle />
+            </div>
             <Link href="/login">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="text-foreground">
                 Log in
               </Button>
             </Link>
             <Link href="/register">
-              <Button size="sm">Sign up</Button>
+              <Button
+                size="sm"
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
+              >
+                Sign up
+              </Button>
             </Link>
           </div>
         </div>
       </header>
+
       {/* Hero Section */}
-      <section className="w-full py-12 md:py-24 lg:py-32 bg-gradient-to-b from-background to-muted">
+      <section className="w-full py-12 md:py-24 lg:py-32 bg-gradient-to-b from-background to-muted/30">
         <div className="container px-4 md:px-6">
           <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 items-center">
             <div className="flex flex-col justify-center space-y-4">
-              <Badge className="w-fit" variant="outline">
+              <Badge className="w-fit border-border bg-muted text-foreground">
                 The Future of AI Interaction
               </Badge>
               <div className="space-y-2">
-                <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
+                <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none text-foreground">
                   Your Unified AI{" "}
                   <span className="text-primary">Playground</span>
                 </h1>
@@ -109,11 +122,14 @@ const page = () => {
               </div>
               <div className="flex flex-col gap-2 min-[400px]:flex-row">
                 <Link href="/register">
-                  <Button size="lg" className="gap-1">
+                  <Button
+                    size="lg"
+                    className="gap-1 bg-primary text-primary-foreground hover:bg-primary/90"
+                  >
                     Get Started <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
-                <Button size="lg" variant="outline">
+                <Button size="lg" variant="outline" className="text-foreground">
                   Watch Demo
                 </Button>
               </div>
@@ -142,22 +158,22 @@ const page = () => {
           </div>
         </div>
       </section>
-      {/* Interactive Demo Section - HIGHLIGHTED & REPOSITIONED */}
-      <section className="w-full py-12 md:py-24 lg:py-32 bg-primary/5 border-y border-primary/20 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(120,80,255,0.2),transparent_60%)]"></div>
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_70%,rgba(120,80,255,0.2),transparent_60%)]"></div>
+      {/* Interactive Demo Section */}
+      <section className="w-full py-12 md:py-24 lg:py-32 bg-background border-y border-border relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,hsl(var(--primary)/0.15),transparent_60%)]"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_70%,hsl(var(--primary)/0.15),transparent_60%)]"></div>
         </div>
         <div className="container px-4 md:px-6 relative z-10">
           <div className="flex flex-col items-center justify-center space-y-4 text-center mb-8">
-            <Badge className="w-fit bg-primary text-primary-foreground px-3 py-1 text-sm">
+            <Badge className="w-fit bg-primary text-primary-foreground px-3 py-1 text-sm border border-primary">
               No Registration Required
             </Badge>
             <div className="space-y-2">
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
+              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl text-foreground">
                 Try AIverse <span className="text-primary">Right Now</span>
               </h2>
-              <p className="max-w-[700px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+              <p className="max-w-[700px] text-muted-foreground md:text-xl/relaxed">
                 Experience our universal AI chat interface without signing up
               </p>
             </div>
@@ -167,11 +183,11 @@ const page = () => {
             <div className="lg:col-span-2 space-y-6">
               <div className="space-y-4">
                 <div className="flex items-start gap-2">
-                  <div className="rounded-full bg-primary/10 p-2 mt-1">
+                  <div className="rounded-full bg-primary/10 p-2 mt-1 border border-primary/20">
                     <Check className="h-4 w-4 text-primary" />
                   </div>
                   <div>
-                    <h3 className="font-medium">
+                    <h3 className="font-medium text-foreground">
                       Chat with Multiple AI Models
                     </h3>
                     <p className="text-muted-foreground text-sm">
@@ -181,11 +197,13 @@ const page = () => {
                 </div>
 
                 <div className="flex items-start gap-2">
-                  <div className="rounded-full bg-primary/10 p-2 mt-1">
+                  <div className="rounded-full bg-primary/10 p-2 mt-1 border border-primary/20">
                     <Check className="h-4 w-4 text-primary" />
                   </div>
                   <div>
-                    <h3 className="font-medium">Universal Context</h3>
+                    <h3 className="font-medium text-foreground">
+                      Universal Context
+                    </h3>
                     <p className="text-muted-foreground text-sm">
                       See how all models receive your messages simultaneously
                     </p>
@@ -193,11 +211,13 @@ const page = () => {
                 </div>
 
                 <div className="flex items-start gap-2">
-                  <div className="rounded-full bg-primary/10 p-2 mt-1">
+                  <div className="rounded-full bg-primary/10 p-2 mt-1 border border-primary/20">
                     <Check className="h-4 w-4 text-primary" />
                   </div>
                   <div>
-                    <h3 className="font-medium">Compare Responses</h3>
+                    <h3 className="font-medium text-foreground">
+                      Compare Responses
+                    </h3>
                     <p className="text-muted-foreground text-sm">
                       Switch between tabs to see how different models respond
                     </p>
@@ -207,7 +227,10 @@ const page = () => {
 
               <div className="flex flex-col space-y-3">
                 <Link href="/register">
-                  <Button size="lg" className="gap-1 w-full">
+                  <Button
+                    size="lg"
+                    className="gap-1 w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                  >
                     Sign Up For Full Access <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
@@ -219,7 +242,7 @@ const page = () => {
             </div>
 
             <div className="lg:col-span-3">
-              <div className="bg-background rounded-xl border-2 border-primary/20 shadow-xl shadow-primary/5 overflow-hidden">
+              <div className="bg-background rounded-xl border border-border shadow-xl overflow-hidden">
                 <div className="p-1 sm:p-2 md:p-4">
                   <ChatDemo />
                 </div>
