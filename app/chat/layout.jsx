@@ -341,7 +341,7 @@ export default function ChatLayout({ children }) {
           className={` h-full ${
             isMobile
               ? "flex-1 min-w-0"
-              : "w-[350px] flex-shrink-0 border-r border-border"
+              : "w-[400px] flex-shrink-0 border-r border-border"
           } `}
         >
           <DetailView />

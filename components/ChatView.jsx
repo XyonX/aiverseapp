@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   Plus,
   SearchIcon,
@@ -9,6 +9,8 @@ import {
   Clock,
   Filter,
   MoreVertical,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import {
   SidebarHeader,
@@ -32,6 +34,14 @@ import { cn } from "@/lib/utils"; // Assuming you have this utility;
 export function ChatView() {
   const BACKEND_URL =
     process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
+  // Inside your component
+  const scrollContainerRef = useRef(null);
+
+  const handleScroll = (scrollOffset) => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollLeft += scrollOffset;
+    }
+  };
 
   const router = useRouter();
   const handleBotClick = (bot) => {
@@ -168,58 +178,74 @@ export function ChatView() {
           {/* <SidebarGroup className="px-0 w-full">
             <SidebarGroupContent className="w-full"> */}
           {/* Featured Bots Section (Horizontally Scrollable, Fixed Height) */}
+
           {filteredFeaturedBots.length > 0 && (
             <div className="p-2 border-b w-full flex-shrink-0">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-xs font-semibold uppercase text-muted-foreground">
                   Featured
                 </h3>
-                <Button variant="ghost" size="icon" className="h-7 w-7">
-                  {" "}
-                  <Plus className="h-4 w-4" />
-                  <span className="sr-only">Add Bot</span>
-                </Button>
-              </div>
-              <ScrollArea
-                className="w-full whitespace-nowrap"
-                orientation="horizontal"
-              >
-                <div className="flex gap-3 pb-2">
-                  {filteredFeaturedBots.map((bot) => (
-                    <div
-                      key={bot._id}
-                      className="flex flex-col items-center w-16 flex-shrink-0 cursor-pointer group"
-                      onClick={() => handleBotClick(bot)}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) =>
-                        e.key === "Enter" && handleBotClick(bot)
-                      }
-                    >
-                      <div className="relative">
-                        <Avatar className="h-10 w-10 border-2 border-transparent group-hover:border-primary transition-colors">
-                          <AvatarImage
-                            src={`${BACKEND_URL}/uploads/${bot.avatar}`}
-                            alt={bot.name}
-                          />
-                          <AvatarFallback>
-                            {bot.name?.charAt(0) || "B"}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span
-                          className={cn(
-                            "absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full border-2 border-background ring-1 ring-background",
-                            "bg-gray-400"
-                          )}
-                        />
-                      </div>
-                      <span className="text-xs mt-1 text-muted-foreground truncate w-full text-center">
-                        {bot.name}
-                      </span>
-                    </div>
-                  ))}
+                <div className="flex gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => handleScroll(-200)}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    <span className="sr-only">Scroll left</span>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => handleScroll(200)}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                    <span className="sr-only">Scroll right</span>
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-7 w-7">
+                    <Plus className="h-4 w-4" />
+                    <span className="sr-only">Add Bot</span>
+                  </Button>
                 </div>
-              </ScrollArea>
+              </div>
+              <div
+                ref={scrollContainerRef}
+                className="flex space-x-4 overflow-x-auto pb-2 w-full scrollbar-hide"
+              >
+                {filteredFeaturedBots.map((bot) => (
+                  <div
+                    key={bot._id}
+                    className="flex flex-col items-center w-16 flex-shrink-0 cursor-pointer group"
+                    onClick={() => handleBotClick(bot)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => e.key === "Enter" && handleBotClick(bot)}
+                  >
+                    <div className="relative">
+                      <Avatar className="h-10 w-10 border-2 border-transparent group-hover:border-primary transition-colors">
+                        <AvatarImage
+                          src={`${BACKEND_URL}/uploads/${bot.avatar}`}
+                          alt={bot.name}
+                        />
+                        <AvatarFallback>
+                          {bot.name?.charAt(0) || "B"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span
+                        className={cn(
+                          "absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full border-2 border-background ring-1 ring-background",
+                          "bg-gray-400"
+                        )}
+                      />
+                    </div>
+                    <span className="text-xs mt-1 text-muted-foreground truncate w-full text-center">
+                      {bot.name}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
           {/* === Chat Categories Section (Fixed Height) === */}
