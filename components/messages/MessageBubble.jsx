@@ -2,7 +2,9 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { MessageActions } from "./MessageActions";
 import { Bookmark } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
+import { useAppContext } from "@/app/AppProvider";
 export function MessageBubble({
   id,
   content,
@@ -22,6 +24,8 @@ export function MessageBubble({
   const senderInitial = senderName.substring(0, 1);
   const senderRowAlignment = role === "user" ? "flex-row-reverse" : "";
 
+  const { user } = useAppContext();
+
   return (
     <div
       className={cn(
@@ -35,6 +39,13 @@ export function MessageBubble({
         <div className="flex-shrink-0 h-6 w-6 rounded-full bg-muted border border-border/50 flex items-center justify-center text-muted-foreground text-xs">
           {senderInitial}
         </div>
+        {/* <Avatar className="h-6 w-6 rounded-full">
+          <AvatarImage
+            src={`${process.env.NEXT_PUBLIC_BACKEND_URL}${user.avatar}`}
+            alt={user.username}
+          />
+          <AvatarFallback>{user.username?.charAt(0) || "P"}</AvatarFallback>
+        </Avatar> */}
         <span className="text-xs text-muted-foreground">{senderName}</span>
         <span className="text-xs text-muted-foreground/60">{timestamp}</span>
       </div>

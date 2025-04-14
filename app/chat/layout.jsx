@@ -318,9 +318,11 @@ import { useAppContext } from "@/app/AppProvider";
 import { useMediaQuery } from "@/utils/useMediaQuery";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
+import DiscoverView from "@/components/DiscoverView";
 
 export default function ChatLayout({ children }) {
-  const { selectedAIContact, setSelectedAIContact } = useAppContext();
+  const { selectedAIContact, setSelectedAIContact, activeTab } =
+    useAppContext();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const pathname = usePathname();
 
@@ -339,7 +341,7 @@ export default function ChatLayout({ children }) {
         {/* Detail View */}
         <div
           className={` h-full ${
-            isMobile
+            isMobile || activeTab == "discover"
               ? "flex-1 min-w-0"
               : "w-[400px] flex-shrink-0 border-r border-border"
           } `}
@@ -347,7 +349,7 @@ export default function ChatLayout({ children }) {
           <DetailView />
         </div>
         {/* Conversation Area */}
-        {!isMobile && selectedAIContact && (
+        {!isMobile && !activeTab == "discover" && (
           <div className="flex-1 h-full overflow-hidden bg-background">
             {children}
           </div>

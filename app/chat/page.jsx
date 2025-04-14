@@ -1,3 +1,4 @@
+import DiscoverView from "@/components/DiscoverView";
 import NewUserChat from "@/components/NewUserChat";
 import { SidebarInset } from "@/components/ui/sidebar";
 
@@ -7,11 +8,7 @@ const page = () => {
   //     <NewUserChat />
   //   </div>
   // );
-  return (
-    <div className=" hidden md:flex h-full items-center justify-center bg-muted/20 ">
-      <h1>SELECT CHAT TO START</h1>
-    </div>
-  );
+  return <DiscoverView />;
 };
 
 export default page;
