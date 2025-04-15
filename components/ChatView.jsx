@@ -101,7 +101,7 @@ export function ChatView() {
 
   return (
     <div div className="flex flex-col h-full w-full">
-      {/* --- ADJUSTED PADDING: p-4 -> p-2, GAP: gap-3.5 -> gap-2 --- */}
+      {/* fixed */}
       <SidebarHeader className="gap-2 border-b py-4 px-2">
         <div className="flex w-full items-center justify-between">
           <div className="text-base font-semibold">Chats</div>{" "}
@@ -127,13 +127,14 @@ export function ChatView() {
           />
         </div>
       </SidebarHeader>
+      {/* should take available space so scroll doesnt hapend in this so flex-1 */}
       <Tabs
         defaultValue="all"
         value={activeTab}
         onValueChange={setActiveTab}
-        className="w-full"
+        className="flex-1 flex flex-col"
       >
-        {/* --- ADJUSTED PADDING: px-4 -> px-2 --- */}
+        {/* should be fixed */}
         <div className="border-b px-4">
           {/* --- ADJUSTED GAP: gap-4 -> gap-2 --- */}
           {/* Adjusted Tab styles for consistency */}
@@ -173,12 +174,9 @@ export function ChatView() {
             </TabsTrigger>
           </TabsList>
         </div>
-        {/* Content Area: Contains fixed Featured/Categories and scrollable Recent */}
+        {/* this are should also be fixed */}
         <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-          {/* <SidebarGroup className="px-0 w-full">
-            <SidebarGroupContent className="w-full"> */}
-          {/* Featured Bots Section (Horizontally Scrollable, Fixed Height) */}
-
+          {/* this are itself be fixed */}
           {filteredFeaturedBots.length > 0 && (
             <div className="p-2 border-b w-full flex-shrink-0">
               <div className="flex items-center justify-between mb-2">
@@ -210,6 +208,7 @@ export function ChatView() {
                   </Button>
                 </div>
               </div>
+              {/* this are will scroll horizontall working fine */}
               <div
                 ref={scrollContainerRef}
                 className="flex space-x-4 overflow-x-auto pb-2 w-full scrollbar-hide"
@@ -248,7 +247,7 @@ export function ChatView() {
               </div>
             </div>
           )}
-          {/* === Chat Categories Section (Fixed Height) === */}
+          {/* fixed */}
           <div className="p-2 border-b flex-shrink-0">
             {/* --- ADJUSTED HEADING STYLE --- */}
             <h3 className="text-xs font-semibold uppercase text-muted-foreground mb-2">
@@ -281,10 +280,9 @@ export function ChatView() {
               </Button>
             </div>
           </div>
-          {/* === End Categories Section === */}
 
-          {/* Recent Chats Section (Vertically Scrollable, Takes Remaining Space) */}
-          <div className="w-full">
+          {/* should be fixed and  should tare remaining space */}
+          <div className="flex-1 flex flex-col min-h-0">
             <div className="flex items-center justify-between px-2 pt-2 pb-1 flex-shrink-0">
               <h3 className="text-xs font-semibold uppercase text-muted-foreground">
                 Recent
@@ -302,7 +300,7 @@ export function ChatView() {
                 </p>
               </div>
             ) : (
-              <ul className="w-full divide-y divide-border">
+              <ul className="flex-1 divide-y divide-border overflow-y-auto">
                 {filteredChats.map((chat) => {
                   let bot = aiContacts.find((bot) => bot._id === chat.botId);
                   // Format the Date object to a readable string

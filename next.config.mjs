@@ -6,6 +6,7 @@ const nextConfig = {
       "localhost",
       "aiverse-backend.onrender.com",
       "backend.aiverseapp.site",
+      "13.48.194.167",
     ],
   },
 };
