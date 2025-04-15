@@ -284,103 +284,94 @@ export function ChatView() {
           {/* === End Categories Section === */}
 
           {/* Recent Chats Section (Vertically Scrollable, Takes Remaining Space) */}
-          <div className="flex-1 flex flex-col min-h-0">
+          <div className="w-full">
             <div className="flex items-center justify-between px-2 pt-2 pb-1 flex-shrink-0">
               <h3 className="text-xs font-semibold uppercase text-muted-foreground">
                 Recent
               </h3>
               <Button variant="ghost" size="sm" className="h-7 px-1.5 text-xs">
-                {" "}
                 <Clock className="h-3.5 w-3.5 mr-1" /> Sort{" "}
               </Button>
             </div>
-            <ScrollArea className="flex-1 px-0">
-              {filteredChats.length === 0 ? (
-                <div className="px-4 py-8 text-center">
-                  <p className="text-sm text-muted-foreground">
-                    {searchQuery
-                      ? `No chats found for "${searchQuery}"`
-                      : "No recent chats"}
-                  </p>
-                </div>
-              ) : (
-                <ul className="w-full divide-y divide-border">
-                  {filteredChats.map((chat) => {
-                    const bot = aiContacts.find((b) => b?._id === chat?.botId);
-                    if (!bot) return null;
-                    let formattedTime = " ";
-                    try {
-                      if (chat.time) {
-                        const date = new Date(chat.time);
-                        if (!isNaN(date.getTime())) {
-                          formattedTime = date.toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: true,
-                          });
-                        }
-                      }
-                    } catch (error) {
-                      console.error("Error formatting time:", chat.time, error);
+            {filteredChats.length === 0 ? (
+              <div className="px-4 py-8 text-center">
+                <p className="text-sm text-muted-foreground">
+                  {searchQuery
+                    ? `No chats found for "${searchQuery}"`
+                    : "No recent chats"}
+                </p>
+              </div>
+            ) : (
+              <ul className="w-full divide-y divide-border">
+                {filteredChats.map((chat) => {
+                  let bot = aiContacts.find((bot) => bot._id === chat.botId);
+                  // Format the Date object to a readable string
+                  const formattedTime = new Date(chat.time).toLocaleTimeString(
+                    [],
+                    {
+                      hour: "2-digit",
+                      minute: "2-digit",
                     }
-                    const isSelected = selectedAIContact?._id === bot._id;
-                    return (
-                      <li key={chat._id || bot._id}>
-                        <button
-                          className={cn(
-                            "flex items-center w-full px-2 py-2.5 text-left hover:bg-accent focus-visible:bg-accent focus-visible:outline-none",
-                            isSelected && "bg-accent"
-                          )}
-                          onClick={() => handleBotClick(bot)}
-                        >
-                          <div className="relative flex-shrink-0 mr-2.5">
-                            <Avatar className="h-9 w-9">
-                              <AvatarImage
-                                src={`${BACKEND_URL}/uploads/${bot.avatar}`}
-                                alt={bot.name}
-                              />
-                              <AvatarFallback>
-                                {bot.name?.charAt(0) || "B"}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span
-                              className={cn(
-                                "absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full border border-background ring-1 ring-background",
-                                "bg-gray-400"
-                              )}
+                  );
+                  const isSelected = selectedAIContact?._id === bot._id;
+
+                  return (
+                    <li key={chat._id || bot._id}>
+                      <button
+                        className={cn(
+                          "flex items-center w-full px-2 py-2.5 text-left hover:bg-accent focus-visible:bg-accent focus-visible:outline-none",
+                          isSelected && "bg-accent"
+                        )}
+                        onClick={() => handleBotClick(bot)}
+                      >
+                        <div className="relative flex-shrink-0 mr-2.5">
+                          <Avatar className="h-9 w-9">
+                            <AvatarImage
+                              src={`${BACKEND_URL}/uploads/${bot.avatar}`}
+                              alt={bot.name}
                             />
+                            <AvatarFallback>
+                              {bot.name?.charAt(0) || "B"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span
+                            className={cn(
+                              "absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full border border-background ring-1 ring-background",
+                              "bg-gray-400"
+                            )}
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex justify-between items-center mb-0.5">
+                            <h4 className="text-sm font-medium truncate">
+                              {bot.name}
+                            </h4>
+                            <span className="text-xs text-muted-foreground flex-shrink-0 ml-2">
+                              {formattedTime}
+                            </span>
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex justify-between items-center mb-0.5">
-                              <h4 className="text-sm font-medium truncate">
-                                {bot.name}
-                              </h4>
-                              <span className="text-xs text-muted-foreground flex-shrink-0 ml-2">
-                                {formattedTime}
-                              </span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <p className="text-xs text-muted-foreground truncate pr-2">
-                                {chat.lastMessage || "..."}
-                              </p>
-                              {(chat.unread || 0) > 0 && (
-                                <Badge
-                                  variant="primary"
-                                  className="h-5 px-1.5 text-xs font-medium flex-shrink-0"
-                                >
-                                  {chat.unread}
-                                </Badge>
-                              )}
-                            </div>
+                          <div className="flex justify-between items-center">
+                            <p className="text-xs text-muted-foreground truncate pr-2">
+                              {chat.lastMessage || "..."}
+                            </p>
+                            {(chat.unread || 0) > 0 && (
+                              <Badge
+                                variant="primary"
+                                className="h-5 px-1.5 text-xs font-medium flex-shrink-0"
+                              >
+                                {chat.unread}
+                              </Badge>
+                            )}
                           </div>
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </ScrollArea>
+                        </div>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </div>
+
           {/* </SidebarGroupContent>
           </SidebarGroup> */}
         </div>

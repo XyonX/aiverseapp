@@ -67,12 +67,24 @@ export function AppProvider({ children }) {
 
   // Load recent chat contacts from localStorage for the current user
   const loadRecentChatContacts = () => {
-    if (user) {
-      const savedRecentChats = JSON.parse(
-        localStorage.getItem(`recentChats_${user._id}`)
-      );
-      if (savedRecentChats) setRecentChatContacts(savedRecentChats);
-    }
+    // if (user) {
+    //   const savedRecentChats = JSON.parse(
+    //     localStorage.getItem(`recentChats_${user._id}`)
+    //   );
+    //   if (savedRecentChats) setRecentChatContacts(savedRecentChats);
+    //   console.log(
+    //     "Recent chat loaded from local",
+    //     JSON.stringify(savedRecentChats)
+    //   );
+    // }
+    const savedRecentChats = JSON.parse(
+      localStorage.getItem(`recentChats_${user._id}`)
+    );
+    if (savedRecentChats) setRecentChatContacts(savedRecentChats);
+    console.log(
+      "Recent chat loaded from local",
+      JSON.stringify(savedRecentChats)
+    );
   };
 
   // Save recent chat contacts to localStorage for the current user
@@ -82,6 +94,7 @@ export function AppProvider({ children }) {
         `recentChats_${user._id}`,
         JSON.stringify(recentChatContacts)
       );
+      console.log("Recent chat saved in local");
     }
   };
 
@@ -293,17 +306,17 @@ export function AppProvider({ children }) {
 
   // Save recent chat contacts when they change
   useEffect(() => {
-    if (user && recentChatContacts.length > 0) {
+    if (recentChatContacts.length > 0) {
       saveRecentChatContacts();
     }
   }, [recentChatContacts, user]);
 
-  // useEffect(() => {
-  //   if (user) {
-  //     fetchBots();
-  //     fetchRecentConversations(); // Uncommented for consistency
-  //   }
-  // }, [user]);
+  useEffect(() => {
+    if (user) {
+      fetchBots();
+      fetchRecentConversations(); // Uncommented for consistency
+    }
+  }, [user]);
 
   const changeTab = (tabName) => setActiveTab(tabName);
 
