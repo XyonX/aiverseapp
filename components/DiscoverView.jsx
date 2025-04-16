@@ -52,6 +52,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Upload, Plus } from "lucide-react";
 import { useAppContext } from "@/app/AppProvider";
+import BotCreationForm from "./BotCreationForm";
 
 // Data remains unchanged
 const discoverData = {
@@ -380,7 +381,11 @@ const DiscoverView = () => {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={isCreateBotOpen} onOpenChange={setIsCreateBotOpen}>
+      <BotCreationForm
+        isCreateBotOpen={isCreateBotOpen}
+        setIsCreateBotOpen={setIsCreateBotOpen}
+      />
+      {/* <Dialog open={isCreateBotOpen} onOpenChange={setIsCreateBotOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle>Create New Bot</DialogTitle>
@@ -454,7 +459,7 @@ const DiscoverView = () => {
             </DialogFooter>
           </form>
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
 
       <div className="border-b p-6 bg-background sticky top-0 z-10">
         <div className="max-w-5xl mx-auto">
