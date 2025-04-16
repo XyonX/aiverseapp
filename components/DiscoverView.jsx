@@ -51,6 +51,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Upload, Plus } from "lucide-react";
+import { useAppContext } from "@/app/AppProvider";
 
 // Data remains unchanged
 const discoverData = {
@@ -225,6 +226,25 @@ const discoverData = {
 };
 
 const DiscoverView = () => {
+  const truncateText = (text, maxWords) => {
+    if (!text) return "";
+    const words = text.trim().split(/\s+/);
+    if (words.length > maxWords) {
+      return words.slice(0, maxWords).join(" ") + "...";
+    }
+    return text;
+  };
+
+  const { user, aiContacts } = useAppContext();
+  const BACKEND_URL =
+    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
+
+  // src={`${BACKEND_URL}/uploads/${bot.avatar}`}
+
+  const tryNowHandler = ({ bot }) => {
+    //todo add in the bots array of user if not exist
+    //redirect to the bot/id page
+  };
   const onBotClick = () => {
     console.log("Bot Clicked");
   };
@@ -250,7 +270,10 @@ const DiscoverView = () => {
                 <div className="flex items-center gap-4">
                   <div className="relative">
                     <img
-                      src={selectedBotDetails.avatar || "/placeholder.svg"}
+                      src={
+                        `${BACKEND_URL}/uploads/${selectedBotDetails.avatar}` ||
+                        "/placeholder.svg"
+                      }
                       alt={selectedBotDetails.name}
                       className="h-20 w-20 rounded-lg object-cover"
                     />
@@ -550,7 +573,7 @@ const DiscoverView = () => {
                 </Button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {discoverData.featuredBots
+                {aiContacts
                   .filter(
                     (bot) =>
                       (!selectedCategory ||
@@ -569,16 +592,18 @@ const DiscoverView = () => {
                   )
                   .map((bot) => (
                     <Card
-                      key={bot.id}
-                      className="overflow-hidden hover:shadow-md transition-shadow"
+                      className="cursor-pointer overflow-hidden hover:shadow-md transition-shadow"
                       onClick={() => handleBotDetails(bot)}
                     >
                       <CardHeader className="p-4 pb-2 flex flex-row items-center gap-3">
-                        <div className="relative">
+                        <div className="relative h-12 w-12">
                           <img
-                            src={bot.avatar || "/placeholder.svg"}
+                            src={
+                              `${BACKEND_URL}/uploads/${bot.avatar}` ||
+                              "/placeholder.svg"
+                            }
                             alt={bot.name}
-                            className="h-16 w-16 rounded-lg object-cover"
+                            className="h-10 w-10 rounded-lg object-cover"
                           />
                           {bot.verified && (
                             <div className="absolute -top-1 -right-1 bg-blue-500 text-white rounded-full p-0.5">
@@ -587,24 +612,16 @@ const DiscoverView = () => {
                           )}
                         </div>
                         <div className="flex-1">
-                          <div className="flex items-center">
-                            <CardTitle className="text-base">
-                              {bot.name}
-                            </CardTitle>
-                            {bot.popular && (
-                              <Badge variant="secondary" className="ml-2">
-                                <Sparkles className="h-3 w-3 mr-1" />
-                                Popular
-                              </Badge>
-                            )}
-                          </div>
+                          <CardTitle className="text-base">
+                            {bot.name}
+                          </CardTitle>
                           <CardDescription className="text-xs">
                             {bot.category}
                           </CardDescription>
                         </div>
                       </CardHeader>
                       <CardContent className="p-4 pt-2">
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-xs text-muted-foreground line-clamp-2">
                           {bot.description}
                         </p>
                       </CardContent>
@@ -613,9 +630,6 @@ const DiscoverView = () => {
                           <Star className="h-3.5 w-3.5 text-yellow-500 fill-current" />
                           <span className="text-sm font-medium ml-1">
                             {bot.rating}
-                          </span>
-                          <span className="text-xs text-muted-foreground ml-1">
-                            ({bot.reviews})
                           </span>
                         </div>
                         <Button size="sm">Try Now</Button>
@@ -661,7 +675,10 @@ const DiscoverView = () => {
                     >
                       <CardHeader className="p-3 pb-2 flex flex-row items-center gap-3">
                         <img
-                          src={bot.avatar || "/placeholder.svg"}
+                          src={
+                            `${BACKEND_URL}/uploads/${bot.avatar}` ||
+                            "/placeholder.svg"
+                          }
                           alt={bot.name}
                           className="h-12 w-12 rounded-lg object-cover"
                         />
@@ -729,7 +746,10 @@ const DiscoverView = () => {
                       <CardHeader className="p-3 pb-2 flex flex-row items-center gap-3">
                         <div className="relative">
                           <img
-                            src={bot.avatar || "/placeholder.svg"}
+                            src={
+                              `${BACKEND_URL}/uploads/${bot.avatar}` ||
+                              "/placeholder.svg"
+                            }
                             alt={bot.name}
                             className="h-12 w-12 rounded-lg object-cover"
                           />
@@ -789,7 +809,10 @@ const DiscoverView = () => {
                     >
                       <CardHeader className="p-3 pb-2 flex flex-row items-center gap-3">
                         <img
-                          src={bot.avatar || "/placeholder.svg"}
+                          src={
+                            `${BACKEND_URL}/uploads/${bot.avatar}` ||
+                            "/placeholder.svg"
+                          }
                           alt={bot.name}
                           className="h-12 w-12 rounded-lg object-cover"
                         />
@@ -840,7 +863,10 @@ const DiscoverView = () => {
                     >
                       <CardHeader className="p-3 pb-2 flex flex-row items-center gap-3">
                         <img
-                          src={bot.avatar || "/placeholder.svg"}
+                          src={
+                            `${BACKEND_URL}/uploads/${bot.avatar}` ||
+                            "/placeholder.svg"
+                          }
                           alt={bot.name}
                           className="h-12 w-12 rounded-lg object-cover"
                         />
