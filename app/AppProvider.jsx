@@ -58,11 +58,13 @@ export function AppProvider({ children }) {
   const loadAIContacts = () => {
     const savedAIContacts = JSON.parse(localStorage.getItem("aiContacts"));
     if (savedAIContacts) setAIContacts(savedAIContacts);
+    console.log("Contact loaded from Local");
   };
 
   // Save AI contacts to localStorage
   const saveAIContacts = () => {
     localStorage.setItem("aiContacts", JSON.stringify(aiContacts));
+    console.log("Ai contact saved in local");
   };
 
   // Load recent chat contacts from localStorage for the current user
@@ -81,10 +83,7 @@ export function AppProvider({ children }) {
       localStorage.getItem(`recentChats_${user._id}`)
     );
     if (savedRecentChats) setRecentChatContacts(savedRecentChats);
-    console.log(
-      "Recent chat loaded from local",
-      JSON.stringify(savedRecentChats)
-    );
+    console.log("Recent chat loaded from local");
   };
 
   // Save recent chat contacts to localStorage for the current user
@@ -133,23 +132,12 @@ export function AppProvider({ children }) {
 
   // Fetch AI bots from backend
   const fetchBots = async () => {
-    console.log("[Bot Fetcher] Fetching bots from backend...");
-
     try {
-      console.log(
-        "[Bot Fetcher] Sending GET request to:",
-        `${BACKEND_URL}/api/bots`
-      );
       const response = await axios.get(`${BACKEND_URL}/api/bots`);
-
-      console.log("[Bot Fetcher] Response received. Status:", response.status);
-      console.log(
-        "[Bot Fetcher] Bots Data:",
-        JSON.stringify(response.data, null, 2)
-      );
 
       setAIContacts(response.data);
       console.log("[State Updater] aiContacts updated successfully.");
+      console.log("Boot Received", aiContacts);
     } catch (error) {
       console.error("[Bot Fetcher] Error fetching bots:", error);
     }
@@ -179,10 +167,7 @@ export function AppProvider({ children }) {
       }));
 
       setRecentChatContacts(formattedConversations);
-      console.log(
-        "[State Updater] recentChatContacts updated successfully:",
-        JSON.stringify(formattedConversations, null, 2)
-      );
+      console.log("[State Updater] recentChatContacts updated successfully:");
     } catch (error) {
       console.error(
         "[Conversation Fetcher] Error fetching recent conversations:",
@@ -283,6 +268,7 @@ export function AppProvider({ children }) {
   useEffect(() => {
     loadSettings();
     loadAIContacts();
+    console.log("Loaded fresh content");
   }, []);
 
   // Save settings when they change

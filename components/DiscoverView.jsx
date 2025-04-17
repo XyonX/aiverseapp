@@ -53,7 +53,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Upload, Plus } from "lucide-react";
 import { useAppContext } from "@/app/AppProvider";
 import BotCreationForm from "./BotCreationForm";
-
+import { useRouter } from "next/navigation";
 // Data remains unchanged
 const discoverData = {
   featuredBots: [
@@ -235,17 +235,22 @@ const DiscoverView = () => {
     }
     return text;
   };
-
-  const { user, aiContacts } = useAppContext();
+  const router = useRouter();
+  const { user, setSelectedAIContact, aiContacts } = useAppContext();
   const BACKEND_URL =
     process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
 
+  const tryNowHandler = (bot) => {
+    if (!user.bots.includes(bot._id)) {
+      user.bots.push(bot._id);
+    }
+    console.log("bot clicked:", bot);
+    setSelectedAIContact(bot);
+    router.push(`/chat/${bot._id}`); // Navigate to chat page with bot ID
+  };
+
   // src={`${BACKEND_URL}/uploads/${bot.avatar}`}
 
-  const tryNowHandler = ({ bot }) => {
-    //todo add in the bots array of user if not exist
-    //redirect to the bot/id page
-  };
   const onBotClick = () => {
     console.log("Bot Clicked");
   };
@@ -637,7 +642,14 @@ const DiscoverView = () => {
                             {bot.rating}
                           </span>
                         </div>
-                        <Button size="sm">Try Now</Button>
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            tryNowHandler(bot);
+                          }}
+                        >
+                          Try Now
+                        </Button>
                       </CardFooter>
                     </Card>
                   ))}
