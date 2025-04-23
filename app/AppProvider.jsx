@@ -178,7 +178,7 @@ export function AppProvider({ children }) {
   const register = async (username, email, password) => {
     try {
       //register the user with firebase
-      const user = registerUser(email, password);
+      const user = await registerUser(email, password);
 
       //get the ID token for secure backend communication
       const idToken = await user.getIdToken();
