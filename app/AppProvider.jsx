@@ -19,6 +19,7 @@ export function AppProvider({ children }) {
   const [activeTab, setActiveTab] = useState("chats");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null); // Added error state for better UX
+  const [firebaseUser, setFirebaseUser] = useState(null);
 
   //for settings
   const [theme, setTheme] = useState("light");
@@ -97,12 +98,35 @@ export function AppProvider({ children }) {
     }
   };
 
+  const fetchUser = async () => {
+    if (firebaseUser) {
+      try {
+        const idToken = await firebaseUser.getIdToken();
+        const response = await axios.get(`${BACKEND_URL}/api/auth/me`, {
+          headers: { Authorization: `Bearer ${idToken}` },
+        });
+        setUser(response.data.user);
+        // loadRecentChatContacts(); // Load cached recent chats immediately
+        fetchBots(); // Fetch AI contacts
+        fetchRecentConversations(); // Fetch latest chats from server
+      } catch (error) {
+        console.error("Token verification failed:", error);
+        setError("Failed to verify user. Please try again."); // Don’t logout
+      }
+    } else {
+      setUser(null); // Reset state without forcing logout
+      setLoading(false);
+    }
+    setLoading(false);
+  };
+
   //firebase callback event effect
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
+    const unsubscribe = onAuthStateChanged(auth, async (fUser) => {
+      if (fUser) {
+        setFirebaseUser(fUser);
         try {
-          const idToken = await firebaseUser.getIdToken();
+          const idToken = await fUser.getIdToken(); // Correct usage
           const response = await axios.get(`${BACKEND_URL}/api/auth/me`, {
             headers: { Authorization: `Bearer ${idToken}` },
           });
@@ -198,6 +222,7 @@ export function AppProvider({ children }) {
       if (!response.ok) {
         throw new Error(data.error || "Registration Failed");
       }
+      await fetchUser();
       console.log("user register");
       return data;
     } catch (error) {
@@ -228,6 +253,7 @@ export function AppProvider({ children }) {
         throw new Error(data.error || "Login Failed at backend");
       }
       console.log("User logined at backend");
+      await fetchUser();
     } catch (error) {
       console.error("Error while trying to login:", error);
       throw error;
@@ -332,6 +358,7 @@ export function AppProvider({ children }) {
         setProfileVisibility,
         dataSharing,
         setDataSharing,
+        fetchUser,
       }}
     >
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
