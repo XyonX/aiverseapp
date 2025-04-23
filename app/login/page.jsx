@@ -23,6 +23,7 @@ export default function LoginPage() {
     setIsSubmitting(true);
     try {
       await login(email, password);
+
       router.push("/chat");
     } catch (err) {
       setError("Invalid email or password");
