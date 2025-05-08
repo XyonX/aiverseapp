@@ -18,7 +18,7 @@ export function AppProvider({ children }) {
   const [recentChatContacts, setRecentChatContacts] = useState([]);
   const [activeTab, setActiveTab] = useState("chats");
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null); // Added error state for better UX
+  const [error, setError] = useState(null);
   const [firebaseUser, setFirebaseUser] = useState(null);
 
   //for settings

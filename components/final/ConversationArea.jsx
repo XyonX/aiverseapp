@@ -334,6 +334,7 @@ const ConversationArea = () => {
     });
 
     if (selectedAIContact.streamingEnabled) {
+      const startTime = Date.now(); // Log start time
       console.log("Streaming is enables");
       const response = await fetch(`${BACKEND_URL}/api/messages`, {
         method: "POST",
@@ -341,6 +342,8 @@ const ConversationArea = () => {
         credentials: "include",
         signal: abortControllerRef.current.signal,
       });
+
+      console.log(`Time to fetch response: ${Date.now() - startTime}ms`);
 
       if (!response.ok || !response.body) {
         console.error("Streaming request failed");
