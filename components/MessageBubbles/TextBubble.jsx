@@ -1,6 +1,10 @@
 import React from "react";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeHighlight from "rehype-highlight";
+// import "highlight.js/styles/github-dark.css";
+import { useState } from "react";
 
 const TextBubble = ({ sender, message, userAvatar, botAvatar }) => {
   if (!message?.trim()) return null;

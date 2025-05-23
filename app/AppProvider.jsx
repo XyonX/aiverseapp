@@ -199,78 +199,100 @@ export function AppProvider({ children }) {
       );
     }
   };
-  const register = async (username, email, password) => {
+  const register = async (username, email, password, confirmPassword) => {
+    if (password !== confirmPassword) {
+      throw new Error("Passwords do not match");
+    }
     try {
-      //register the user with firebase
-      const user = await registerUser(email, password);
-
-      //get the ID token for secure backend communication
-      const idToken = await user.getIdToken();
-
-      //call the backend api to create custom user in db
+      const userCredential = await registerUser(email, password);
+      const idToken = await userCredential.getIdToken();
       const response = await fetch(`${BACKEND_URL}/api/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${idToken}`, //passing the idtoken
+          Authorization: `Bearer ${idToken}`,
         },
         body: JSON.stringify({ username, email }),
       });
-
       const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.error || "Registration Failed");
+        throw new Error(data.error || "Registration failed on backend");
       }
       await fetchUser();
-      console.log("user register");
       return data;
     } catch (error) {
-      console.error("Error during registration:", error);
-      throw error; // Allow caller to handle the error
+      console.error("Registration error:", error);
+      let errorMessage = "An unexpected error occurred. Please try again.";
+      if (error.code) {
+        switch (error.code) {
+          case "auth/email-already-in-use":
+            errorMessage = "This email is already registered. Please log in.";
+            break;
+          case "auth/invalid-email":
+            errorMessage = "The email address is not valid.";
+            break;
+          case "auth/weak-password":
+            errorMessage =
+              "The password is too weak. Please use a stronger password.";
+            break;
+          default:
+            errorMessage = error.message;
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      throw new Error(errorMessage);
     }
   };
+
   const login = async (email, password) => {
     try {
-      //login to firebase
-      const user = await loginUser(email, password);
-
-      //get idToken for the backend
-      const idToken = await user.getIdToken();
-
+      const userCredential = await loginUser(email, password);
+      const idToken = await userCredential.getIdToken();
       const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${idToken}`,
         },
-        body: JSON.stringify({
-          message: "Demo login data",
-        }),
+        body: JSON.stringify({ message: "Demo login data" }),
       });
-
+      const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || "Login Failed at backend");
+        throw new Error(data.error || "Login failed on backend");
       }
-      console.log("User logined at backend");
       await fetchUser();
+      return data;
     } catch (error) {
-      console.error("Error while trying to login:", error);
-      throw error;
+      console.error("Login error:", error);
+      let errorMessage = "Invalid email or password.";
+      if (error.code) {
+        switch (error.code) {
+          case "auth/user-not-found":
+          case "auth/wrong-password":
+            errorMessage = "Invalid email or password.";
+            break;
+          case "auth/invalid-email":
+            errorMessage = "The email address is not valid.";
+            break;
+          default:
+            errorMessage = error.message;
+        }
+      }
+      throw new Error(errorMessage);
     }
   };
 
   const handleLogout = async () => {
     try {
       await firebaseSignOut(auth);
-      // await axios.post(`${BACKEND_URL}/api/auth/logout`);
-    } catch (error) {
-      console.error("Logout error:", error);
-    } finally {
       setUser(null);
       setAIContacts([]);
       setSelectedAIContact(null);
       setRecentChatContacts([]);
+    } catch (error) {
+      console.error("Logout error:", error);
+      setError("Failed to log out. Please try again.");
     }
   };
 
