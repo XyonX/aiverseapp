@@ -5,6 +5,7 @@ import { AppProvider } from "./AppProvider";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { ConversationView } from "@/components/ConversationView";
 import { BotProvider, useBot } from "@/context/BotContext";
+import { Toaster } from "react-hot-toast";
 
 // Load the Inter font with desired subsets and assign it a CSS variable
 const inter = Inter({
@@ -35,7 +36,32 @@ export default function RootLayout({ children }) {
     >
       <body className="bg-gray-50 dark:bg-neutral-900 font-sans">
         <AppProvider>
-          <BotProvider>{children}</BotProvider>
+          <BotProvider>
+            {children}
+            <Toaster 
+              position="top-right"
+              toastOptions={{
+                duration: 4000,
+                style: {
+                  background: 'hsl(var(--background))',
+                  color: 'hsl(var(--foreground))',
+                  border: '1px solid hsl(var(--border))',
+                },
+                success: {
+                  iconTheme: {
+                    primary: 'hsl(var(--primary))',
+                    secondary: 'hsl(var(--primary-foreground))',
+                  },
+                },
+                error: {
+                  iconTheme: {
+                    primary: 'hsl(var(--destructive))',
+                    secondary: 'hsl(var(--destructive-foreground))',
+                  },
+                },
+              }}
+            />
+          </BotProvider>
         </AppProvider>
       </body>
     </html>
