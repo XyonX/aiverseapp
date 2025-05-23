@@ -32,7 +32,14 @@ export default function RegisterPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
   const router = useRouter();
-  const { register } = useAppContext();
+  const { register, user } = useAppContext();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      router.push("/chat");
+    }
+  }, [user, router]);
 
   // Monitor online/offline status
   useEffect(() => {
@@ -136,10 +143,17 @@ export default function RegisterPage() {
       // Delay redirect slightly to show success message
       setTimeout(() => {
         router.push("/chat");
-      }, 1500);
+      }, 1000);
     } catch (error) {
       console.error("Registration error:", error);
       toast.error(getErrorMessage(error), { id: toastId });
+      
+      // Clear password fields on error
+      setFormData(prev => ({
+        ...prev,
+        password: "",
+        confirmPassword: ""
+      }));
     } finally {
       setIsSubmitting(false);
     }
@@ -152,6 +166,11 @@ export default function RegisterPage() {
       [name]: value.trim()
     }));
   };
+
+  // If user is already logged in, don't render the form
+  if (user) {
+    return null;
+  }
 
   return (
     <div className="flex justify-center items-center min-h-screen p-4">
