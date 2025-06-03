@@ -33,79 +33,125 @@ import {
 } from "@/components/ui/accordion";
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { useRouter } from "next/navigation";
+import { useAppContext } from "@/app/AppProvider";
 
 const LandingPage = () => {
+  const router = useRouter();
+  const { loginAsGuest } = useAppContext();
+
   return (
-    <div className="flex flex-col min-h-screen">
-      {/* Header */}
-      <header className="border-border/50 sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between px-4 md:px-6">
-          <div>
-            <span className="text-xl font-bold text-foreground">AIverse</span>
+    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] bg-background">
+      <div className="container px-4 md:px-6">
+        <div className="flex flex-col items-center space-y-4 text-center">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl/none">
+              Welcome to AIverse
+            </h1>
+            <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl dark:text-gray-400">
+              Your unified AI playground. Chat with multiple AI models in one place.
+            </p>
           </div>
-          <nav className="hidden md:flex gap-6">
-            <Link
-              href="#features"
-              className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors"
+          <div className="space-x-4">
+            <Button
+              className="px-8"
+              onClick={() => router.push("/register")}
             >
-              Features
-            </Link>
-            <Link
-              href="#how-it-works"
-              className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors"
+              Get Started
+            </Button>
+            <Button
+              variant="outline"
+              className="px-8"
+              onClick={loginAsGuest}
             >
-              How It Works
-            </Link>
-            <Link
-              href="#models"
-              className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors"
-            >
-              AI Models
-            </Link>
-            <Link
-              href="#pricing"
-              className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors"
-            >
-              Pricing
-            </Link>
-            <Link
-              href="#testimonials"
-              className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors"
-            >
-              Testimonials
-            </Link>
-            <Link
-              href="#faq"
-              className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors"
-            >
-              FAQ
-            </Link>
-          </nav>
-          <div className="flex items-center gap-4">
-            <div className="px-0 py-0 flex justify-center md:px-1">
-              <ThemeToggle />
-            </div>
-            <Link href="/login">
-              <Button variant="outline" size="sm" className="text-foreground">
-                Log in
-              </Button>
-            </Link>
-            <Link href="/register">
-              <Button
-                size="sm"
-                className="bg-primary text-primary-foreground hover:bg-primary/90"
-              >
-                Sign up
-              </Button>
-            </Link>
+              Try as Guest
+            </Button>
+          </div>
+          <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-3 lg:gap-12">
+            {features.map((feature) => (
+              <div key={feature.title} className="flex flex-col items-center space-y-2 border-gray-800 p-4 rounded-lg">
+                <div className="p-2 bg-black bg-opacity-50 rounded-full">
+                  {feature.icon}
+                </div>
+                <h2 className="text-xl font-bold">{feature.title}</h2>
+                <p className="text-zinc-200 dark:text-zinc-100">
+                  {feature.description}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
-      </header>
-
-      {/* Rest of the landing page content */}
-      {/* ... Copy all the sections from the original page.js ... */}
+      </div>
     </div>
   );
 };
+
+const features = [
+  {
+    title: "Multiple AI Models",
+    description: "Chat with various AI models including GPT, Claude, and more all in one place.",
+    icon: (
+      <svg
+        className=" h-6 w-6 text-white"
+        fill="none"
+        height="24"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z" />
+        <path d="M7 7h.01" />
+      </svg>
+    ),
+  },
+  {
+    title: "Universal Context",
+    description: "Maintain conversation context across different AI models seamlessly.",
+    icon: (
+      <svg
+        className=" h-6 w-6 text-white"
+        fill="none"
+        height="24"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+        <path d="M3 3v5h5" />
+        <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+        <path d="M16 16h5v5" />
+      </svg>
+    ),
+  },
+  {
+    title: "File Sharing",
+    description: "Share and discuss files with AI models for enhanced collaboration.",
+    icon: (
+      <svg
+        className=" h-6 w-6 text-white"
+        fill="none"
+        height="24"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z" />
+        <path d="M7 7h.01" />
+      </svg>
+    ),
+  },
+];
 
 export default LandingPage; 
