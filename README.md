@@ -17,7 +17,7 @@ A modern, feature-rich AI development and experimentation platform built with Ne
 
 AIVerse is a comprehensive platform for AI model interaction and experimentation. It provides a modern interface for working with various AI models, managing conversations, and exploring AI capabilities.
 
-![Features Overview](https://raw.githubusercontent.com/XyonX/portfolio-content/main/Portfolios/aiverse/images/features.png)
+![Features Overview](https://raw.githubusercontent.com/XyonX/portfolio-content/main/Portfolios/aiverse/images/conv-2.png)
 
 ## Features
 
@@ -38,7 +38,19 @@ AIVerse is a comprehensive platform for AI model interaction and experimentation
 
 ### Conversation Interface
 
-![Conversation Interface](https://raw.githubusercontent.com/XyonX/portfolio-content/main/Portfolios/aiverse/images/conversation_area.png)
+![Conversation Interface](https://raw.githubusercontent.com/XyonX/portfolio-content/main/Portfolios/aiverse/images/conv-2.png)
+
+### Bot Discovery
+
+Explore a diverse ecosystem of AI models and persona-based bots in our discovery page. Users can:
+
+- Browse through various LLM-powered AI assistants
+- Discover specialized persona-based bots for different use cases
+- Create custom AI personas with simple prompts
+- Share your created bots with the community
+- Filter and search bots based on capabilities and use cases
+
+![Bot Discovery](https://raw.githubusercontent.com/XyonX/portfolio-content/main/Portfolios/aiverse/images/discover-page.png)
 
 ## Getting Started
 
@@ -73,9 +85,47 @@ yarn install
 ```bash
 cp .env.example .env.local
 ```
-Edit `.env.local` with your configuration values.
 
-4. Start the development servers
+### Environment Variables
+
+Configure your `.env.local` with the following variables:
+
+```env
+# Firebase Configuration
+NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_firebase_auth_domain
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_firebase_project_id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_firebase_storage_bucket
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=your_firebase_app_id
+
+# API Configuration
+NEXT_PUBLIC_API_URL=http://localhost:3001 # Backend API URL
+NEXT_PUBLIC_WS_URL=ws://localhost:3001 # WebSocket URL
+
+# Authentication
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your_nextauth_secret
+
+# Optional: Analytics
+NEXT_PUBLIC_GA_TRACKING_ID=your_ga_tracking_id
+```
+
+#### Getting the Required Credentials
+
+1. **Firebase Configuration**:
+   - Create a new project in [Firebase Console](https://console.firebase.google.com/)
+   - Go to Project Settings > General
+   - Scroll down to "Your apps" and create a new web app
+   - Copy the configuration values from the provided config object
+
+2. **NextAuth Setup**:
+   - Generate a secure random string for NEXTAUTH_SECRET
+   - You can use: `openssl rand -base64 32`
+
+Make sure to replace all placeholder values with your actual credentials. Never commit your `.env` files to version control.
+
+4. Start the development server
 ```bash
 # Frontend
 yarn dev
@@ -110,7 +160,6 @@ aiverse/
 - [Three.js](https://threejs.org/) - 3D graphics library
 - [Framer Motion](https://www.framer.com/motion/) - Animation library
 - [React Hook Form](https://react-hook-form.com/) - Form handling
-- [Zod](https://zod.dev/) - TypeScript-first schema validation
 
 ## Contributing
 
@@ -142,5 +191,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 <div align="center">
-Made with ❤️ by the AIVerse team
+Made with ❤️ by joydip chakraborty
 </div>
