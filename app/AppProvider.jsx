@@ -4,10 +4,7 @@ import { ThemeProvider } from "next-themes";
 import axios from "axios";
 import { auth } from "@/app/firebase/config";
 import { onAuthStateChanged, signOut as firebaseSignOut } from "firebase/auth";
-import { registerUser, loginUser, loginAsGuest } from "./firebase/firebaseClient";
-import { useRouter, usePathname } from "next/navigation";
-import Cookies from "js-cookie";
-import { toast } from "react-hot-toast";
+import { registerUser, loginUser } from "./firebase/firebaseClient";
 
 const AppContext = createContext();
 
@@ -31,9 +28,6 @@ export function AppProvider({ children }) {
   const [notificationSound, setNotificationSound] = useState("default");
   const [profileVisibility, setProfileVisibility] = useState("public");
   const [dataSharing, setDataSharing] = useState(true);
-
-  const router = useRouter();
-  const pathname = usePathname();
 
   // Load settings from localStorage
   const loadSettings = () => {
@@ -117,7 +111,7 @@ export function AppProvider({ children }) {
         fetchRecentConversations(); // Fetch latest chats from server
       } catch (error) {
         console.error("Token verification failed:", error);
-        setError("Failed to verify user. Please try again."); // Don't logout
+        setError("Failed to verify user. Please try again."); // Don’t logout
       }
     } else {
       setUser(null); // Reset state without forcing logout
@@ -128,46 +122,30 @@ export function AppProvider({ children }) {
 
   //firebase callback event effect
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        // User is signed in
-        const token = await user.getIdToken();
-        Cookies.set("auth-token", token, { 
-          expires: 7, // 7 days
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "Lax"
-        });
-        
-        // Fetch user data
+    const unsubscribe = onAuthStateChanged(auth, async (fUser) => {
+      if (fUser) {
+        setFirebaseUser(fUser);
         try {
-          const userData = await fetchUser();
-          setUser(userData);
-          
-          // If on auth pages, redirect to chat
-          if (pathname === "/login" || pathname === "/register") {
-            router.push("/chat");
-          }
+          const idToken = await fUser.getIdToken(); // Correct usage
+          const response = await axios.get(`${BACKEND_URL}/api/auth/me`, {
+            headers: { Authorization: `Bearer ${idToken}` },
+          });
+          setUser(response.data.user);
+          // loadRecentChatContacts(); // Load cached recent chats immediately
+          fetchBots(); // Fetch AI contacts
+          fetchRecentConversations(); // Fetch latest chats from server
         } catch (error) {
-          console.error("Error fetching user data:", error);
-          toast.error("Failed to load user data");
+          console.error("Token verification failed:", error);
+          setError("Failed to verify user. Please try again."); // Don’t logout
         }
       } else {
-        // User is signed out
-        setUser(null);
-        Cookies.remove("auth-token");
-        
-        // If on protected route, redirect to login
-        if (pathname.startsWith("/chat") || 
-            pathname.startsWith("/discover") || 
-            pathname.startsWith("/profile") || 
-            pathname.startsWith("/settings")) {
-          router.push("/login");
-        }
+        setUser(null); // Reset state without forcing logout
+        setLoading(false);
       }
+      setLoading(false);
     });
-
     return () => unsubscribe();
-  }, [pathname]);
+  }, []);
 
   // Load cached recent chats when user changes
   useEffect(() => {
@@ -270,67 +248,51 @@ export function AppProvider({ children }) {
   const login = async (email, password) => {
     try {
       const userCredential = await loginUser(email, password);
-      const token = await userCredential.user.getIdToken();
-      
-      // Set auth cookie
-      Cookies.set("auth-token", token, { 
-        expires: 7,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "Lax"
+      const idToken = await userCredential.getIdToken();
+      const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({ message: "Demo login data" }),
       });
-      
-      // Fetch user data
-      const userData = await fetchUser();
-      setUser(userData);
-      
-      return userCredential;
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Login failed on backend");
+      }
+      await fetchUser();
+      return data;
     } catch (error) {
-      throw error;
-    }
-  };
-
-  const handleGuestLogin = async () => {
-    try {
-      const userCredential = await loginAsGuest();
-      const token = await userCredential.getIdToken();
-      
-      // Set auth cookie
-      Cookies.set("auth-token", token, { 
-        expires: 1, // Guest sessions expire in 1 day
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "Lax"
-      });
-      
-      // Create guest user on backend
-      const response = await axios.post(
-        `${BACKEND_URL}/api/auth/guest`,
-        {},
-        {
-          headers: { Authorization: `Bearer ${token}` }
+      console.error("Login error:", error);
+      let errorMessage = "Invalid email or password.";
+      if (error.code) {
+        switch (error.code) {
+          case "auth/user-not-found":
+          case "auth/wrong-password":
+            errorMessage = "Invalid email or password.";
+            break;
+          case "auth/invalid-email":
+            errorMessage = "The email address is not valid.";
+            break;
+          default:
+            errorMessage = error.message;
         }
-      );
-      
-      setUser(response.data.user);
-      router.push("/chat");
-      toast.success("Logged in as guest. Note: Your data will be limited and temporary.");
-    } catch (error) {
-      console.error("Guest login error:", error);
-      toast.error(getErrorMessage(error));
+      }
+      throw new Error(errorMessage);
     }
   };
 
   const handleLogout = async () => {
     try {
       await firebaseSignOut(auth);
-      Cookies.remove("auth-token");
       setUser(null);
       setAIContacts([]);
       setSelectedAIContact(null);
       setRecentChatContacts([]);
-      router.push("/");
     } catch (error) {
       console.error("Logout error:", error);
-      toast.error("Failed to log out. Please try again.");
+      setError("Failed to log out. Please try again.");
     }
   };
 
@@ -405,7 +367,6 @@ export function AppProvider({ children }) {
         user,
         login,
         register,
-        loginAsGuest: handleGuestLogin,
         logout: handleLogout,
         theme,
         setTheme,
